@@ -658,9 +658,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const basePath = saved || (() => {
                 try {
                     const _os = require('os'), _path = require('path'), p = _os.platform();
-                    if (p === 'win32') return _path.join(process.env.APPDATA || _path.join(_os.homedir(), 'AppData', 'Roaming'), '.vanilla-suns');
+                    if (p === 'win32') return _path.join(process.env.APPDATA || _path.join(_os.homedir(), 'AppData', 'Roaming'), '.fixlauncher');
                     if (p === 'darwin') return _path.join(_os.homedir(), 'Library', 'Application Support', 'vanilla-suns');
-                    return _path.join(_os.homedir(), '.vanilla-suns');
+                    return _path.join(_os.homedir(), '.fixlauncher');
                 } catch(e) { return null; }
             })();
             if (!basePath) { statMods.textContent = '—'; return; }

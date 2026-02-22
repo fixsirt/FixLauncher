@@ -188,12 +188,12 @@ const os = require("os");
 function getPlaytimePath() {
     try {
         // Читаем путь из файла настроек рядом с лаунчером (сохраняется renderer-ом через localStorage)
-        // Fallback — дефолтный путь .vanilla-suns
+        // Fallback — дефолтный путь .fixlauncher
         const p = process.platform;
         let base;
-        if (p === "win32") base = path.join(process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming"), ".vanilla-suns");
+        if (p === "win32") base = path.join(process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming"), ".fixlauncher");
         else if (p === "darwin") base = path.join(os.homedir(), "Library", "Application Support", "vanilla-suns");
-        else base = path.join(os.homedir(), ".vanilla-suns");
+        else base = path.join(os.homedir(), ".fixlauncher");
         return path.join(base, "launcher-playtime.json");
     } catch(e) { return null; }
 }

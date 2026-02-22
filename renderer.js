@@ -13,9 +13,9 @@ function _playtimeFilePath() {
     try {
         const base = localStorage.getItem('minecraft-path') || (() => {
             const p = os.platform();
-            if (p === 'win32') return path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.vanilla-suns');
+            if (p === 'win32') return path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.fixlauncher');
             if (p === 'darwin') return path.join(os.homedir(), 'Library', 'Application Support', 'vanilla-suns');
-            return path.join(os.homedir(), '.vanilla-suns');
+            return path.join(os.homedir(), '.fixlauncher');
         })();
         return path.join(base, 'launcher-playtime.json');
     } catch(e) { return null; }
@@ -446,11 +446,11 @@ function loadSettings() {
     
     if (osType === 'win32') {
         const appData = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-        minecraftPath = path.join(appData, '.vanilla-suns');
+        minecraftPath = path.join(appData, '.fixlauncher');
     } else if (osType === 'darwin') {
         minecraftPath = path.join(os.homedir(), 'Library', 'Application Support', 'vanilla-suns');
     } else {
-        minecraftPath = path.join(os.homedir(), '.vanilla-suns');
+        minecraftPath = path.join(os.homedir(), '.fixlauncher');
     }
     
     const savedMinecraftPath = localStorage.getItem('minecraft-path');
@@ -842,11 +842,11 @@ function getVanillaSunsPath() {
         const osType = os.platform();
         if (osType === 'win32') {
             const appData = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-            minecraftPath = path.join(appData, '.vanilla-suns');
+            minecraftPath = path.join(appData, '.fixlauncher');
         } else if (osType === 'darwin') {
             minecraftPath = path.join(os.homedir(), 'Library', 'Application Support', 'vanilla-suns');
         } else {
-            minecraftPath = path.join(os.homedir(), '.vanilla-suns');
+            minecraftPath = path.join(os.homedir(), '.fixlauncher');
         }
     }
     
@@ -974,8 +974,8 @@ function launchMinecraft() {
         } else {
             // Используем путь по умолчанию
             baseMinecraftPath = os.platform() === 'win32' 
-                ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.vanilla-suns')
-                : path.join(os.homedir(), '.vanilla-suns');
+                ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.fixlauncher')
+                : path.join(os.homedir(), '.fixlauncher');
         }
     }
     
@@ -1450,8 +1450,8 @@ const MODRINTH_USER_AGENT = 'FixLauncher/2.0 (https://t.me/vanillasunsteam)';
 function getModsPathForVersion(versionId) {
     const basePath = localStorage.getItem('minecraft-path') ||
         (os.platform() === 'win32'
-            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.vanilla-suns')
-            : path.join(os.homedir(), '.vanilla-suns'));
+            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.fixlauncher')
+            : path.join(os.homedir(), '.fixlauncher'));
     let folderName;
     if (versionId === 'evacuation') {
         folderName = 'minecraft-survival';
@@ -1465,8 +1465,8 @@ function getModsPathForVersion(versionId) {
 function getDataPathForVersion(versionId) {
     const basePath = localStorage.getItem('minecraft-path') ||
         (os.platform() === 'win32'
-            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.vanilla-suns')
-            : path.join(os.homedir(), '.vanilla-suns'));
+            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.fixlauncher')
+            : path.join(os.homedir(), '.fixlauncher'));
     let folderName;
     if (versionId === 'evacuation') {
         folderName = 'minecraft-survival';
@@ -1480,8 +1480,8 @@ function getDataPathForVersion(versionId) {
 function getResourcePacksPathForVersion(versionId) {
     const basePath = localStorage.getItem('minecraft-path') ||
         (os.platform() === 'win32'
-            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.vanilla-suns')
-            : path.join(os.homedir(), '.vanilla-suns'));
+            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.fixlauncher')
+            : path.join(os.homedir(), '.fixlauncher'));
     let folderName;
     if (versionId === 'evacuation') {
         folderName = 'minecraft-survival';
@@ -1495,8 +1495,8 @@ function getResourcePacksPathForVersion(versionId) {
 function getShadersPathForVersion(versionId) {
     const basePath = localStorage.getItem('minecraft-path') ||
         (os.platform() === 'win32'
-            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.vanilla-suns')
-            : path.join(os.homedir(), '.vanilla-suns'));
+            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.fixlauncher')
+            : path.join(os.homedir(), '.fixlauncher'));
     let folderName;
     if (versionId === 'evacuation') {
         folderName = 'minecraft-survival';
