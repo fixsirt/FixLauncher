@@ -11,12 +11,11 @@ const { initServersPanel } = require('./src/servers');
 // ─── PLAYTIME DISPLAY (запись — в main.js) ──────────────────────────────────
 function _playtimeFilePath() {
     try {
-        const base = localStorage.getItem('minecraft-path') || (() => {
-            const p = os.platform();
-            if (p === 'win32') return path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.fixlauncher');
-            if (p === 'darwin') return path.join(os.homedir(), 'Library', 'Application Support', 'vanilla-suns');
-            return path.join(os.homedir(), '.fixlauncher');
-        })();
+        const p = os.platform();
+        let base;
+        if (p === 'win32') base = path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.vanilla-suns');
+        else if (p === 'darwin') base = path.join(os.homedir(), 'Library', 'Application Support', 'vanilla-suns');
+        else base = path.join(os.homedir(), '.vanilla-suns');
         return path.join(base, 'launcher-playtime.json');
     } catch(e) { return null; }
 }
@@ -55,7 +54,105 @@ try {
         resetPlayButton();
         hideProgress();
     });
+    _ptIpc.on('update-available', (event, info) => {
+        showUpdateBanner(info);
+    });
 } catch(e) {}
+
+// --- Баннер обновления лаунчера ---
+function showUpdateBanner(info) {
+    if (document.getElementById('update-banner')) return;
+    const banner = document.createElement('div');
+    banner.id = 'update-banner';
+    banner.style.cssText = [
+        'position:fixed','bottom:20px','right:20px','z-index:9999',
+        'background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)',
+        'border:1px solid rgba(255,255,255,0.15)',
+        'border-radius:12px','padding:16px 20px',
+        'box-shadow:0 8px 32px rgba(0,0,0,0.5)',
+        'color:#fff','font-family:inherit','max-width:320px',
+        'display:flex','flex-direction:column','gap:10px',
+        'animation:slideInBanner 0.4s cubic-bezier(.21,1.02,.73,1) forwards'
+    ].join(';');
+    if (!document.getElementById('update-banner-style')) {
+        const style = document.createElement('style');
+        style.id = 'update-banner-style';
+        style.textContent = `
+            @keyframes slideInBanner {
+                from { opacity:0; transform:translateY(20px); }
+                to   { opacity:1; transform:translateY(0); }
+            }
+            #update-banner-close { background:none;border:none;color:rgba(255,255,255,0.5);
+                cursor:pointer;font-size:16px;line-height:1;padding:0;transition:color .2s; }
+            #update-banner-close:hover { color:#fff; }
+            #update-banner-dl { background:var(--accent-color,#5b8cf5);
+                border:none;border-radius:8px;color:#fff;cursor:pointer;
+                font-size:13px;font-weight:600;padding:8px 14px;
+                transition:opacity .2s;flex:1; }
+            #update-banner-dl:hover { opacity:0.85; }
+        `;
+        document.head.appendChild(style);
+    }
+    const notes = info.notes ? info.notes.slice(0, 120) + (info.notes.length > 120 ? '…' : '') : '';
+    const notesHtml = notes ? `<div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;">${notes}</div>` : '';
+    banner.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:18px;">🚀</span>
+                <div>
+                    <div style="font-weight:700;font-size:14px;">Доступно обновление!</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;">FixLauncher v${info.version}</div>
+                </div>
+            </div>
+            <button id="update-banner-close" title="Закрыть">✕</button>
+        </div>
+        ${notesHtml}
+        <div style="display:flex;gap:8px;">
+            <button id="update-banner-dl">⬇ Скачать обновление</button>
+        </div>
+    `;
+    document.body.appendChild(banner);
+    document.getElementById('update-banner-close').onclick = () => banner.remove();
+    document.getElementById('update-banner-dl').onclick = async () => {
+        const btn = document.getElementById('update-banner-dl');
+        if (!btn) return;
+        btn.disabled = true;
+        btn.textContent = '⏳ Загрузка... 0%';
+
+        try {
+            const { ipcRenderer } = require('electron');
+
+            // Слушаем прогресс загрузки
+            const onProgress = (event, percent) => {
+                const b = document.getElementById('update-banner-dl');
+                if (b) b.textContent = `⏳ Загрузка... ${percent}%`;
+            };
+            ipcRenderer.on('update-progress', onProgress);
+
+            const result = await ipcRenderer.invoke('download-update');
+
+            ipcRenderer.removeListener('update-progress', onProgress);
+
+            if (result && result.ok) {
+                const b = document.getElementById('update-banner-dl');
+                if (b) b.textContent = '✅ Установщик запущен!';
+                setTimeout(() => banner.remove(), 2000);
+            } else {
+                // Если нет assets — fallback на браузер
+                ipcRenderer.invoke('open-external', info.url || 'https://github.com/fixsirt/FixLauncher/releases/latest');
+                banner.remove();
+            }
+        } catch(e) {
+            console.error('[UPDATE] download failed:', e);
+            try {
+                const { ipcRenderer } = require('electron');
+                ipcRenderer.invoke('open-external', info.url || 'https://github.com/fixsirt/FixLauncher/releases/latest');
+            } catch(_) {}
+            banner.remove();
+        }
+    };
+}
+// ------------------------------------------
 // ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -446,11 +543,11 @@ function loadSettings() {
     
     if (osType === 'win32') {
         const appData = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-        minecraftPath = path.join(appData, '.fixlauncher');
+        minecraftPath = path.join(appData, '.vanilla-suns');
     } else if (osType === 'darwin') {
         minecraftPath = path.join(os.homedir(), 'Library', 'Application Support', 'vanilla-suns');
     } else {
-        minecraftPath = path.join(os.homedir(), '.fixlauncher');
+        minecraftPath = path.join(os.homedir(), '.vanilla-suns');
     }
     
     const savedMinecraftPath = localStorage.getItem('minecraft-path');
@@ -842,11 +939,11 @@ function getVanillaSunsPath() {
         const osType = os.platform();
         if (osType === 'win32') {
             const appData = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-            minecraftPath = path.join(appData, '.fixlauncher');
+            minecraftPath = path.join(appData, '.vanilla-suns');
         } else if (osType === 'darwin') {
             minecraftPath = path.join(os.homedir(), 'Library', 'Application Support', 'vanilla-suns');
         } else {
-            minecraftPath = path.join(os.homedir(), '.fixlauncher');
+            minecraftPath = path.join(os.homedir(), '.vanilla-suns');
         }
     }
     
@@ -974,8 +1071,8 @@ function launchMinecraft() {
         } else {
             // Используем путь по умолчанию
             baseMinecraftPath = os.platform() === 'win32' 
-                ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.fixlauncher')
-                : path.join(os.homedir(), '.fixlauncher');
+                ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.vanilla-suns')
+                : path.join(os.homedir(), '.vanilla-suns');
         }
     }
     
@@ -1450,8 +1547,8 @@ const MODRINTH_USER_AGENT = 'FixLauncher/2.0 (https://t.me/vanillasunsteam)';
 function getModsPathForVersion(versionId) {
     const basePath = localStorage.getItem('minecraft-path') ||
         (os.platform() === 'win32'
-            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.fixlauncher')
-            : path.join(os.homedir(), '.fixlauncher'));
+            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.vanilla-suns')
+            : path.join(os.homedir(), '.vanilla-suns'));
     let folderName;
     if (versionId === 'evacuation') {
         folderName = 'minecraft-survival';
@@ -1465,8 +1562,8 @@ function getModsPathForVersion(versionId) {
 function getDataPathForVersion(versionId) {
     const basePath = localStorage.getItem('minecraft-path') ||
         (os.platform() === 'win32'
-            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.fixlauncher')
-            : path.join(os.homedir(), '.fixlauncher'));
+            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.vanilla-suns')
+            : path.join(os.homedir(), '.vanilla-suns'));
     let folderName;
     if (versionId === 'evacuation') {
         folderName = 'minecraft-survival';
@@ -1480,8 +1577,8 @@ function getDataPathForVersion(versionId) {
 function getResourcePacksPathForVersion(versionId) {
     const basePath = localStorage.getItem('minecraft-path') ||
         (os.platform() === 'win32'
-            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.fixlauncher')
-            : path.join(os.homedir(), '.fixlauncher'));
+            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.vanilla-suns')
+            : path.join(os.homedir(), '.vanilla-suns'));
     let folderName;
     if (versionId === 'evacuation') {
         folderName = 'minecraft-survival';
@@ -1495,8 +1592,8 @@ function getResourcePacksPathForVersion(versionId) {
 function getShadersPathForVersion(versionId) {
     const basePath = localStorage.getItem('minecraft-path') ||
         (os.platform() === 'win32'
-            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.fixlauncher')
-            : path.join(os.homedir(), '.fixlauncher'));
+            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.vanilla-suns')
+            : path.join(os.homedir(), '.vanilla-suns'));
     let folderName;
     if (versionId === 'evacuation') {
         folderName = 'minecraft-survival';
@@ -5453,9 +5550,6 @@ function continueMinecraftLaunch(minecraftPath, javaPath, playerName, ram, withM
         }
     });
     
-    // Отключаем процесс от родительского, чтобы он мог работать независимо
-    mcProcess.unref();
-
     console.log('Minecraft process started with PID:', mcProcess.pid);
 
     // Даём 5 секунд на старт — если процесс ещё жив, скрываем лаунчер.
@@ -5467,6 +5561,7 @@ function continueMinecraftLaunch(minecraftPath, javaPath, playerName, ram, withM
         }
         console.log('Minecraft is running, hiding launcher. PID:', mcProcess.pid);
         hideProgress();
+        // Отключаем процесс от родительского только после того, как IPC отправлен
         try {
             const { ipcRenderer: _ipc } = require('electron');
             // Discord RPC — ставим статус "В игре"
@@ -5476,6 +5571,7 @@ function continueMinecraftLaunch(minecraftPath, javaPath, playerName, ram, withM
             _ipc.invoke('discord-set-playing', { playerName: _playerNameForDiscord, version: _verLabelForDiscord }).catch(() => {});
             _ipc.invoke('mc-launched', mcProcess.pid).then(() => {
                 console.log('[PLAYTIME] mc-launched IPC sent OK');
+                mcProcess.unref(); // unref только после успешной отправки IPC
             }).catch(e => {
                 console.error('[PLAYTIME] mc-launched IPC error:', e);
                 window.close();

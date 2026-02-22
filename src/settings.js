@@ -21,11 +21,11 @@ function getDefaultMinecraftPath () {
 
     if (osType === 'win32') {
         const appData = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-        return path.join(appData, '.fixlauncher');
+        return path.join(appData, '.vanilla-suns');
     } else if (osType === 'darwin') {
         return path.join(os.homedir(), 'Library', 'Application Support', 'vanilla-suns');
     } else {
-        return path.join(os.homedir(), '.fixlauncher');
+        return path.join(os.homedir(), '.vanilla-suns');
     }
 }
 

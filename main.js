@@ -188,12 +188,12 @@ const os = require("os");
 function getPlaytimePath() {
     try {
         // Читаем путь из файла настроек рядом с лаунчером (сохраняется renderer-ом через localStorage)
-        // Fallback — дефолтный путь .fixlauncher
+        // Fallback — дефолтный путь .vanilla-suns
         const p = process.platform;
         let base;
-        if (p === "win32") base = path.join(process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming"), ".fixlauncher");
+        if (p === "win32") base = path.join(process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming"), ".vanilla-suns");
         else if (p === "darwin") base = path.join(os.homedir(), "Library", "Application Support", "vanilla-suns");
-        else base = path.join(os.homedir(), ".fixlauncher");
+        else base = path.join(os.homedir(), ".vanilla-suns");
         return path.join(base, "launcher-playtime.json");
     } catch(e) { return null; }
 }
@@ -565,7 +565,7 @@ async function checkGitHubUpdate() {
         });
         if (!rawData) throw new Error('Empty response from GitHub API');
         const release = JSON.parse(rawData);
-        const latestVersion = (release.tag_name || '').replace(/^v/, '');
+        const latestVersion = (release.tag_name || '').replace(/^[^\d]*/i, '').replace(/[^\d.].*/,'').trim();
         log('INFO', `Latest version on GitHub: ${latestVersion}`);
 
         function versionToInt(v) {
