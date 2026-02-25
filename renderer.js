@@ -13,7 +13,7 @@ function _playtimeFilePath() {
     try {
         const p = os.platform();
         let base;
-        if (p === 'win32') base = path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.vanilla-suns');
+        if (p === 'win32') base = path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.fixlauncher');
         else if (p === 'darwin') base = path.join(os.homedir(), 'Library', 'Application Support', 'vanilla-suns');
         else base = path.join(os.homedir(), '.vanilla-suns');
         return path.join(base, 'launcher-playtime.json');
@@ -543,11 +543,11 @@ function loadSettings() {
     
     if (osType === 'win32') {
         const appData = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-        minecraftPath = path.join(appData, '.vanilla-suns');
+        minecraftPath = path.join(appData, '.fixlauncher');
     } else if (osType === 'darwin') {
-        minecraftPath = path.join(os.homedir(), 'Library', 'Application Support', 'vanilla-suns');
+        minecraftPath = path.join(os.homedir(), 'Library', 'Application Support', 'fixlauncher');
     } else {
-        minecraftPath = path.join(os.homedir(), '.vanilla-suns');
+        minecraftPath = path.join(os.homedir(), '.fixlauncher');
     }
     
     const savedMinecraftPath = localStorage.getItem('minecraft-path');
@@ -939,11 +939,11 @@ function getVanillaSunsPath() {
         const osType = os.platform();
         if (osType === 'win32') {
             const appData = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-            minecraftPath = path.join(appData, '.vanilla-suns');
+            minecraftPath = path.join(appData, '.fixlauncher');
         } else if (osType === 'darwin') {
-            minecraftPath = path.join(os.homedir(), 'Library', 'Application Support', 'vanilla-suns');
+            minecraftPath = path.join(os.homedir(), 'Library', 'Application Support', 'fixlauncher');
         } else {
-            minecraftPath = path.join(os.homedir(), '.vanilla-suns');
+            minecraftPath = path.join(os.homedir(), '.fixlauncher');
         }
     }
     
@@ -1071,8 +1071,8 @@ function launchMinecraft() {
         } else {
             // Используем путь по умолчанию
             baseMinecraftPath = os.platform() === 'win32' 
-                ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.vanilla-suns')
-                : path.join(os.homedir(), '.vanilla-suns');
+                ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.fixlauncher')
+                : path.join(os.homedir(), '.fixlauncher');
         }
     }
     
@@ -1547,8 +1547,8 @@ const MODRINTH_USER_AGENT = 'FixLauncher/2.0 (https://t.me/vanillasunsteam)';
 function getModsPathForVersion(versionId) {
     const basePath = localStorage.getItem('minecraft-path') ||
         (os.platform() === 'win32'
-            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.vanilla-suns')
-            : path.join(os.homedir(), '.vanilla-suns'));
+            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.fixlauncher')
+            : path.join(os.homedir(), '.fixlauncher'));
     let folderName;
     if (versionId === 'evacuation') {
         folderName = 'minecraft-survival';
@@ -1562,8 +1562,8 @@ function getModsPathForVersion(versionId) {
 function getDataPathForVersion(versionId) {
     const basePath = localStorage.getItem('minecraft-path') ||
         (os.platform() === 'win32'
-            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.vanilla-suns')
-            : path.join(os.homedir(), '.vanilla-suns'));
+            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.fixlauncher')
+            : path.join(os.homedir(), '.fixlauncher'));
     let folderName;
     if (versionId === 'evacuation') {
         folderName = 'minecraft-survival';
@@ -1577,8 +1577,8 @@ function getDataPathForVersion(versionId) {
 function getResourcePacksPathForVersion(versionId) {
     const basePath = localStorage.getItem('minecraft-path') ||
         (os.platform() === 'win32'
-            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.vanilla-suns')
-            : path.join(os.homedir(), '.vanilla-suns'));
+            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.fixlauncher')
+            : path.join(os.homedir(), '.fixlauncher'));
     let folderName;
     if (versionId === 'evacuation') {
         folderName = 'minecraft-survival';
@@ -1592,8 +1592,8 @@ function getResourcePacksPathForVersion(versionId) {
 function getShadersPathForVersion(versionId) {
     const basePath = localStorage.getItem('minecraft-path') ||
         (os.platform() === 'win32'
-            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.vanilla-suns')
-            : path.join(os.homedir(), '.vanilla-suns'));
+            ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.fixlauncher')
+            : path.join(os.homedir(), '.fixlauncher'));
     let folderName;
     if (versionId === 'evacuation') {
         folderName = 'minecraft-survival';
@@ -1719,24 +1719,41 @@ function modrinthFetch(endpoint, options = {}) {
     const url = endpoint.startsWith('http') ? endpoint : MODRINTH_API + endpoint;
     return new Promise((resolve, reject) => {
         const lib = url.startsWith('https') ? https : http;
+        let settled = false;
+        const done = (fn, val) => { if (!settled) { settled = true; fn(val); } };
+
+        // Таймаут 10 секунд — если Modrinth не отвечает, не висим бесконечно
+        const timer = setTimeout(() => {
+            req.destroy();
+            done(reject, new Error('Превышено время ожидания (10с). Проверьте интернет-соединение.'));
+        }, 10000);
+
         const req = lib.get(url, {
-            headers: { 'User-Agent': MODRINTH_USER_AGENT, ...options.headers }
+            headers: { 'User-Agent': MODRINTH_USER_AGENT, ...options.headers },
+            timeout: 10000
         }, (res) => {
             let data = '';
             res.on('data', chunk => { data += chunk; });
             res.on('end', () => {
+                clearTimeout(timer);
                 try {
-                    if (res.statusCode !== 200) {
-                        reject(new Error(data || `HTTP ${res.statusCode}`));
+                    if (res.statusCode === 429) {
+                        done(reject, new Error('Слишком много запросов к Modrinth, подождите немного'));
                         return;
                     }
-                    resolve(JSON.parse(data));
+                    if (res.statusCode !== 200) {
+                        done(reject, new Error(`Modrinth вернул ошибку: HTTP ${res.statusCode}`));
+                        return;
+                    }
+                    done(resolve, JSON.parse(data));
                 } catch (e) {
-                    reject(e);
+                    done(reject, e);
                 }
             });
+            res.on('error', (e) => { clearTimeout(timer); done(reject, e); });
         });
-        req.on('error', reject);
+        req.on('error', (e) => { clearTimeout(timer); done(reject, e); });
+        req.on('timeout', () => { req.destroy(); });
     });
 }
 
@@ -2315,7 +2332,7 @@ function initModsPanel() {
             .catch(err => {
                 if (texturesLoadingEl) texturesLoadingEl.style.display = 'none';
                 if (texturesErrorEl) {
-                    texturesErrorEl.textContent = 'Ошибка поиска: ' + (err.message || 'неизвестная ошибка');
+                    texturesErrorEl.textContent = '❌ ' + (err.message || 'Не удалось подключиться к Modrinth. Проверьте интернет.');
                     texturesErrorEl.style.display = 'block';
                 }
             });
@@ -2392,7 +2409,7 @@ function initModsPanel() {
             .catch(err => {
                 if (shadersLoadingEl) shadersLoadingEl.style.display = 'none';
                 if (shadersErrorEl) {
-                    shadersErrorEl.textContent = 'Ошибка поиска: ' + (err.message || 'неизвестная ошибка');
+                    shadersErrorEl.textContent = '❌ ' + (err.message || 'Не удалось подключиться к Modrinth. Проверьте интернет.');
                     shadersErrorEl.style.display = 'block';
                 }
             });
@@ -2523,7 +2540,7 @@ function initModsPanel() {
             .catch(err => {
                 if (loadingEl) loadingEl.style.display = 'none';
                 if (errorEl) {
-                    errorEl.textContent = 'Ошибка поиска: ' + (err.message || 'неизвестная ошибка');
+                    errorEl.textContent = '❌ ' + (err.message || 'Не удалось подключиться к Modrinth. Проверьте интернет.');
                     errorEl.style.display = 'block';
                 }
             });
@@ -3915,7 +3932,7 @@ function downloadAssemblyFromGitHub(githubRepo, targetPath, versionType) {
             }
             
             // Используем git clone
-            const tempDir = path.join(os.tmpdir(), 'vanilla-suns-download-' + Date.now());
+            const tempDir = path.join(os.tmpdir(), 'fixlauncher-download-' + Date.now());
             
             // НЕ удаляем целевую папку - там уже может быть версия Minecraft
             // Вместо этого клонируем во временную папку и копируем только файлы сборки

@@ -1,0 +1,7 @@
+;!@Install@!UTF-8!
+Title="FixLauncher Installer"
+BeginPrompt="Install FixLauncher?"
+ExecuteFile="wscript.exe"
+ExecuteParameters="//B create-shortcuts.vbs"
+RunProgram="FixLauncher.exe"
+;!@InstallEnd@!
