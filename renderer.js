@@ -914,6 +914,22 @@ function initLinks() {
     });
     
     // Обработка ссылок разработчиков (fixsirt, rodya61 и т.д.) — открытие во внешнем браузере
+    const devLinks = document.querySelectorAll('.dev-link');
+    devLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const url = link.getAttribute('href');
+            if (url) {
+                try {
+                    const { shell } = require('electron');
+                    shell.openExternal(url);
+                } catch (error) {
+                    console.error('Error opening dev link:', error);
+                }
+            }
+        });
+    });
+
     const creatorLinks = document.querySelectorAll('.creator-name');
     creatorLinks.forEach(link => {
         link.addEventListener('click', (e) => {
@@ -1786,17 +1802,60 @@ function getModrinthProject(projectIdOrSlug) {
 }
 
 /** Установить один мод по project_id в указанную пап������у (без проверки з������������������висимостей). Возвращает Promise. */
-function installOneModFromModrinth(projectIdOrSlug, gameVersions, loaders, modsPath) {
+function installOneModFromModrinth(projectIdOrSlug, gameVersions, loaders, modsPath, _installedSet) {
+    const installedSet = _installedSet || new Set();
+    const key = String(projectIdOrSlug).toLowerCase();
+    if (installedSet.has(key)) return Promise.resolve({ skipped: true });
+    installedSet.add(key);
+
     return getModrinthProjectVersions(projectIdOrSlug, gameVersions, loaders).then(versions => {
-        if (!versions || versions.length === 0) return Promise.reject(new Error('Нет подходящей версии'));
+        if (!versions || versions.length === 0) return Promise.reject(new Error('Нет подходящей версии для ' + projectIdOrSlug));
         const v = versions[0];
         const primaryFile = (v.files || []).find(f => f.primary) || (v.files || [])[0];
-        if (!primaryFile || !primaryFile.url) return Promise.reject(new Error('Нет файла для загрузки'));
+        if (!primaryFile || !primaryFile.url) return Promise.reject(new Error('Нет файла для загрузки: ' + projectIdOrSlug));
         if (!fs.existsSync(modsPath)) fs.mkdirSync(modsPath, { recursive: true });
         const fileName = primaryFile.filename || path.basename(primaryFile.url) || `mod-${v.id}.jar`;
         const destPath = path.join(modsPath, fileName);
-        return downloadModFile(primaryFile.url, destPath, null);
+
+        // Install transitive required dependencies first
+        const transitiveDeps = (v.dependencies || []).filter(d => d.dependency_type === 'required' && d.project_id);
+        const uniqueTransitive = [...new Set(transitiveDeps.map(d => d.project_id))].filter(pid => !installedSet.has(String(pid).toLowerCase()));
+
+        let chain = Promise.resolve();
+        uniqueTransitive.forEach(pid => {
+            chain = chain.then(() => installOneModFromModrinth(pid, gameVersions, loaders, modsPath, installedSet)).catch(err => {
+                console.warn('Transitive dependency install failed:', pid, err);
+            });
+        });
+
+        return chain.then(() => downloadModFile(primaryFile.url, destPath, null));
     });
+}
+
+/**
+ * Рекурсивно собирает список всех зависимостей (включая транзитивные) для мода.
+ * Возвращает массив {project_id, title}.
+ */
+function collectAllDepsInfo(projectIdOrSlug, gameVersions, loaders, _visited) {
+    const visited = _visited || new Set();
+    const key = String(projectIdOrSlug).toLowerCase();
+    if (visited.has(key)) return Promise.resolve([]);
+    visited.add(key);
+
+    return getModrinthProjectVersions(projectIdOrSlug, gameVersions, loaders).then(versions => {
+        if (!versions || versions.length === 0) return [];
+        const v = versions[0];
+        const directDeps = (v.dependencies || []).filter(d => d.dependency_type === 'required' && d.project_id);
+        const uniquePids = [...new Set(directDeps.map(d => d.project_id))].filter(pid => !visited.has(String(pid).toLowerCase()));
+        if (uniquePids.length === 0) return [];
+        return Promise.all(uniquePids.map(pid =>
+            getModrinthProject(pid).then(proj => ({ project_id: pid, title: (proj && proj.title) || pid })).catch(() => ({ project_id: pid, title: pid }))
+        )).then(infos => {
+            return Promise.all(infos.map(info =>
+                collectAllDepsInfo(info.project_id, gameVersions, loaders, visited).then(sub => [info, ...sub])
+            )).then(results => results.flat());
+        });
+    }).catch(() => []);
 }
 
 /** Скачать файл по URL в указанный путь */
@@ -2676,18 +2735,36 @@ function initModsPanel() {
                         } catch(e) {}
 
                         if (!irisInstalled) {
-                            return showLauncherConfirm(
-                                'Для работы шейдеров нужен Iris Shaders.\n\nУстановить Iris автоматически вместе с шейдерпаком?',
-                                '🔵 Зависимость: Iris Shaders'
-                            ).then(installIris => {
-                                if (installIris) {
-                                    const gameVersions2 = [version.mcVersion || '1.21.4'];
-                                    return installOneModFromModrinth('iris', gameVersions2, ['fabric'], modsPath)
-                                        .then(() => doInstall())
-                                        .catch(() => doInstall()); // install shader even if Iris fails
-                                } else {
-                                    return doInstall();
+                            const gameVersions2 = [version.mcVersion || '1.21.4'];
+                            return collectAllDepsInfo('iris', gameVersions2, ['fabric'], null).then(transitiveDeps => {
+                                let msg = 'Для работы шейдеров нужен Iris Shaders.';
+                                if (transitiveDeps.length > 0) {
+                                    const depNames = transitiveDeps.map(d => d.title).join(', ');
+                                    msg += '\n\nТакже будут автоматически установлены зависимости Iris: ' + depNames + '.';
                                 }
+                                msg += '\n\nУстановить Iris вместе с шейдерпаком?';
+                                return showLauncherConfirm(msg, '🔵 Зависимость: Iris Shaders').then(installIris => {
+                                    if (installIris) {
+                                        return installOneModFromModrinth('iris', gameVersions2, ['fabric'], modsPath)
+                                            .then(() => doInstall())
+                                            .catch(() => doInstall());
+                                    } else {
+                                        return doInstall();
+                                    }
+                                });
+                            }).catch(() => {
+                                return showLauncherConfirm(
+                                    'Для работы шейдеров нужен Iris Shaders.\n\nУстановить Iris автоматически вместе с шейдерпаком?',
+                                    '🔵 Зависимость: Iris Shaders'
+                                ).then(installIris => {
+                                    if (installIris) {
+                                        return installOneModFromModrinth('iris', gameVersions2, ['fabric'], modsPath)
+                                            .then(() => doInstall())
+                                            .catch(() => doInstall());
+                                    } else {
+                                        return doInstall();
+                                    }
+                                });
                             });
                         }
                     }
@@ -2695,7 +2772,7 @@ function initModsPanel() {
                     return doInstall();
                 }
 
-                // Для модов проверяем зависимости
+                // Для модов проверяем зависимости (включая транзитивные)
                 const requiredDeps = (v.dependencies || []).filter(d => d.dependency_type === 'required' && d.project_id);
                 const uniqueProjectIds = [...new Set(requiredDeps.map(d => d.project_id))];
 
@@ -2709,30 +2786,43 @@ function initModsPanel() {
                     }).catch(fail);
                 }
 
-                Promise.all(uniqueProjectIds.map(pid => getModrinthProject(pid).then(proj => ({ project_id: pid, title: (proj && proj.title) || pid })).catch(() => ({ project_id: pid, title: pid }))))
-                    .then(depInfos => {
-                        const names = depInfos.map(d => d.title).join(', ');
-                        return showLauncherConfirm('У этого мода есть обязательные зависимости: ' + names + '.\n\nУстановить их вместе с модом?', 'Зависимости мода').then(installDeps => {
-                            let chain = Promise.resolve();
-                            if (installDeps) {
-                                uniqueProjectIds.forEach(pid => {
-                                    chain = chain.then(() => installOneModFromModrinth(pid, gameVersions, loaders, installPath)).catch(err => {
-                                        console.warn('Dependency install failed:', pid, err);
-                                    });
+                // Collect all transitive deps info for display
+                Promise.all(uniqueProjectIds.map(pid =>
+                    collectAllDepsInfo(pid, gameVersions, loaders, null).then(sub =>
+                        getModrinthProject(pid).then(proj => [{ project_id: pid, title: (proj && proj.title) || pid }, ...sub]).catch(() => [{ project_id: pid, title: pid }, ...sub])
+                    ).catch(() => [{ project_id: pid, title: pid }])
+                )).then(groups => {
+                    const allDeps = groups.flat();
+                    // Deduplicate
+                    const seen = new Set();
+                    const deduped = allDeps.filter(d => { if (seen.has(d.project_id)) return false; seen.add(d.project_id); return true; });
+                    const names = deduped.map(d => d.title).join(', ');
+                    const hasTransitive = deduped.length > uniqueProjectIds.length;
+                    let confirmMsg = 'У этого мода есть обязательные зависимости: ' + names + '.';
+                    if (hasTransitive) {
+                        confirmMsg += '\n\nВключены транзитивные зависимости (зависимости зависимостей).';
+                    }
+                    confirmMsg += '\n\nУстановить их вместе с модом?';
+                    return showLauncherConfirm(confirmMsg, 'Зависимости мода').then(installDeps => {
+                        let chain = Promise.resolve();
+                        if (installDeps) {
+                            uniqueProjectIds.forEach(pid => {
+                                chain = chain.then(() => installOneModFromModrinth(pid, gameVersions, loaders, installPath)).catch(err => {
+                                    console.warn('Dependency install failed:', pid, err);
                                 });
-                            }
-                            return chain.then(() => {
-                                if (!fs.existsSync(installPath)) fs.mkdirSync(installPath, { recursive: true });
-                                const fileName = primaryFile.filename || path.basename(primaryFile.url) || `mod-${v.id}.jar`;
-                                const destPath = path.join(installPath, fileName);
-                                return downloadModFile(primaryFile.url, destPath, onDlProgress);
-                            }).then(() => {
-                                done();
-                                showToast(installDeps ? 'Мод и зависимости установлены!' : 'Мод установлен!', 'success');
-                            }).catch(fail);
-                        });
-                    })
-                    .catch(fail);
+                            });
+                        }
+                        return chain.then(() => {
+                            if (!fs.existsSync(installPath)) fs.mkdirSync(installPath, { recursive: true });
+                            const fileName = primaryFile.filename || path.basename(primaryFile.url) || `mod-${v.id}.jar`;
+                            const destPath = path.join(installPath, fileName);
+                            return downloadModFile(primaryFile.url, destPath, onDlProgress);
+                        }).then(() => {
+                            done();
+                            showToast(installDeps ? 'Мод и зависимости установлены!' : 'Мод установлен!', 'success');
+                        }).catch(fail);
+                    });
+                }).catch(fail);
             })
             .catch(fail);
     };
