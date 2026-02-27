@@ -72,7 +72,7 @@ function parseServersDat(buf) {
 
     function readCompound() {
         const obj = {};
-        while(true) {
+        for (;;) {
             const type = readByte();
             if(type === 0) break; // TAG_End
             const name = readString();
@@ -218,7 +218,7 @@ function pingServer(host, port, timeout) {
             try {
                 // Read VarInt length
                 let vi = 0, shift = 0, p = 0;
-                while(true) {
+                for (;;) {
                     if(p >= buf.length) return;
                     const b = buf[p++]; vi |= (b & 0x7F) << shift; shift += 7;
                     if(!(b & 0x80)) break;
@@ -227,7 +227,7 @@ function pingServer(host, port, timeout) {
 
                 // Read packet ID
                 let id = 0, s2 = 0, p2 = p;
-                while(true) {
+                for (;;) {
                     const b = buf[p2++]; id |= (b & 0x7F) << s2; s2 += 7;
                     if(!(b & 0x80)) break;
                 }
@@ -235,7 +235,7 @@ function pingServer(host, port, timeout) {
 
                 // Read JSON string length (VarInt)
                 let jsonLen = 0, s3 = 0;
-                while(true) {
+                for (;;) {
                     const b = buf[p2++]; jsonLen |= (b & 0x7F) << s3; s3 += 7;
                     if(!(b & 0x80)) break;
                 }

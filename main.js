@@ -1,7 +1,6 @@
-const { app, BrowserWindow, ipcMain, dialog, shell } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog, shell, session } = require("electron");
 const path = require("path");
 const https = require("https");
-const http = require("http");
 const fs = require("fs");
 
 // ========== Discord Rich Presence ==========
@@ -126,10 +125,52 @@ const REQUEST_TIMEOUT = 5000;
 const NEWS_CACHE_TTL = 5 * 60 * 1000; // 5 минут
 const NEWS_MD_URL = 'https://raw.githubusercontent.com/fixsirt/FixLauncher/main/NEWS.md';
 const LOG_FILE = path.join(__dirname, "debug.log");
+const LOG_MAX_BYTES = 2 * 1024 * 1024;
+const LOG_ROTATIONS = 3;
+const { getLauncherBasePath } = require("./src/paths");
+const NEWS_CACHE_FILE = path.join(getLauncherBasePath(process.platform, require("os").homedir(), process.env.APPDATA), "news-cache.json");
 
 // ========== Состояние ==========
 let mainWindow = null;
 const newsCache = { items: [], timestamp: 0 };
+
+function rotateLogsIfNeeded() {
+    try {
+        if (!fs.existsSync(LOG_FILE)) return;
+        const stat = fs.statSync(LOG_FILE);
+        if (stat.size < LOG_MAX_BYTES) return;
+
+        for (let i = LOG_ROTATIONS - 1; i >= 1; i--) {
+            const src = `${LOG_FILE}.${i}`;
+            const dst = `${LOG_FILE}.${i + 1}`;
+            if (fs.existsSync(src)) fs.renameSync(src, dst);
+        }
+
+        fs.renameSync(LOG_FILE, `${LOG_FILE}.1`);
+    } catch (e) {
+        console.error('Log rotation error:', e.message);
+    }
+}
+
+function writeNewsDiskCache(items) {
+    try {
+        const dir = path.dirname(NEWS_CACHE_FILE);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(NEWS_CACHE_FILE, JSON.stringify({ items, timestamp: Date.now() }), 'utf8');
+    } catch (e) {
+        log('WARN', `Failed to write news cache: ${e.message}`);
+    }
+}
+
+function readNewsDiskCache() {
+    try {
+        if (!fs.existsSync(NEWS_CACHE_FILE)) return [];
+        const data = JSON.parse(fs.readFileSync(NEWS_CACHE_FILE, 'utf8'));
+        return Array.isArray(data.items) ? data.items : [];
+    } catch (e) {
+        return [];
+    }
+}
 
 // ========== Парсер NEWS.md ==========
 function parseNewsMd(md) {
@@ -184,17 +225,26 @@ function fetchNewsMd() {
 
 // ========== Playtime + MC Watch ==========
 const os = require("os");
+const { getPlaytimePath: getCanonicalPlaytimePath, getLegacyBasePaths } = require("./src/paths");
 
 function getPlaytimePath() {
     try {
-        // Читаем путь из файла настроек рядом с лаунчером (сохраняется renderer-ом через localStorage)
-        // Fallback — дефолтный путь .vanilla-suns
-        const p = process.platform;
-        let base;
-        if (p === "win32") base = path.join(process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming"), ".fixlauncher");
-        else if (p === "darwin") base = path.join(os.homedir(), "Library", "Application Support", "vanilla-suns");
-        else base = path.join(os.homedir(), ".vanilla-suns");
-        return path.join(base, "launcher-playtime.json");
+        const canonicalPath = getCanonicalPlaytimePath(process.platform, os.homedir(), process.env.APPDATA);
+        if (fs.existsSync(canonicalPath)) return canonicalPath;
+
+        const legacyPaths = getLegacyBasePaths(process.platform, os.homedir(), process.env.APPDATA)
+            .map((legacyBase) => path.join(legacyBase, 'launcher-playtime.json'));
+
+        const legacyExisting = legacyPaths.find((legacyPath) => fs.existsSync(legacyPath));
+        if (legacyExisting) {
+            const canonicalDir = path.dirname(canonicalPath);
+            if (!fs.existsSync(canonicalDir)) fs.mkdirSync(canonicalDir, { recursive: true });
+            fs.copyFileSync(legacyExisting, canonicalPath);
+            log('INFO', `Migrated legacy playtime file: ${legacyExisting} -> ${canonicalPath}`);
+            return canonicalPath;
+        }
+
+        return canonicalPath;
     } catch(e) { return null; }
 }
 
@@ -293,202 +343,14 @@ function log(level, message) {
     const line = `[${timestamp}][${level}] ${message}\n`;
     console.log(line.trim());
     try {
+        rotateLogsIfNeeded();
         fs.appendFileSync(LOG_FILE, line);
     } catch (e) {}
 }
 
-// ========== Утилиты ==========
-
-function getHttpLib(url) {
-    return url.startsWith("https") ? https : http;
-}
-
-function findMessageBlockBounds(html, startIndex) {
-    const openTag = /<div\s+[^>]*class="[^"]*tgme_widget_message(?!_text)[^"]*"[^>]*>/i;
-    const match = html.slice(startIndex).match(openTag);
-    if (!match) return null;
-
-    const openStart = startIndex + match.index;
-    const openEnd = openStart + match[0].length;
-    let depth = 1;
-    let i = openEnd;
-
-    while (i < html.length && depth > 0) {
-        const nextOpen = html.indexOf("<div", i);
-        const nextClose = html.indexOf("</div>", i);
-        if (nextClose === -1) break;
-
-        if (nextOpen !== -1 && nextOpen < nextClose) {
-            depth++;
-            i = nextOpen + 4;
-        } else {
-            depth--;
-            i = nextClose + 6;
-            if (depth === 0) {
-                return { start: openStart, end: i, content: html.slice(openEnd, i - 6) };
-            }
-        }
-    }
-    return null;
-}
-
-function stripHtmlToText(html) {
-    if (!html) return "";
-    return html
-        .replace(/<br\s*\/?>/gi, "\n")
-        .replace(/<\/p>\s*<p[^>]*>/gi, "\n")
-        .replace(/<a\s+[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, (_, href, inner) => href && inner ? `${inner.trim()} (${href})` : "")
-        .replace(/<[^>]+>/g, " ")
-        .replace(/&nbsp;/g, " ")
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/&quot;/g, '"')
-        .replace(/\s+/g, " ")
-        .trim();
-}
-
-function sanitizeHtmlForNews(html) {
-    if (!html || typeof html !== "string") return "";
-    return String(html)
-        .replace(/<script\b[\s\S]*?<\/script>/gi, "")
-        .replace(/<iframe\b[\s\S]*?<\/iframe>/gi, "")
-        .replace(/\s+on\w+=["'][^"']*["']/gi, "")
-        .replace(/\bhref=["']javascript:[^"']*["']/gi, 'href="#"')
-        .replace(/<a\s+([^>]*?)href=["']([^"']*)["']([^>]*)>/gi, (m, before, href, after) => {
-            if (/^https?:\/\//i.test(href)) {
-                return `<a ${before} href="${href.replace(/&/g, "&amp;")}" ${after} target="_blank" rel="noopener">`;
-            }
-            return "<span>";
-        });
-}
-
-function parseTelegramDate(timeMatch) {
-    if (!timeMatch) return { dateUnix: 0, dateStr: "" };
-    const d = new Date(timeMatch[1]);
-    return {
-        dateUnix: Math.floor(d.getTime() / 1000),
-        dateStr: d.toLocaleDateString("ru-RU", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit"
-        })
-    };
-}
-
-function extractMessageContent(content) {
-    let rawText = "";
-    let rawHtml = "";
-
-    const textDivMatch = content.match(/<div[^>]*class="[^"]*tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
-    if (textDivMatch) {
-        rawHtml = textDivMatch[1];
-        rawText = stripHtmlToText(rawHtml);
-    }
-
-    if (!rawText && !rawHtml) {
-        const bubbleMatch = content.match(/<div[^>]*tgme_widget_message_bubble[^>]*>([\s\S]*?)<\/div>/i);
-        if (bubbleMatch) {
-            rawHtml = bubbleMatch[1];
-            rawText = stripHtmlToText(rawHtml);
-        }
-    }
-
-    if (!rawText && !rawHtml) {
-        const anyTextRe = /<div[^>]*>([\s\S]{10,}?)<\/div>/gi;
-        let m;
-        while ((m = anyTextRe.exec(content)) !== null) {
-            const t = stripHtmlToText(m[1]);
-            if (t.length > 5 && !/^\d{1,2}\.\d{1,2}\.\d{2,4}/.test(t) && !/^https?:\/\//.test(t) && !/^\d{1,2}:\d{2}/.test(t)) {
-                rawText = t;
-                break;
-            }
-        }
-    }
-
-    const text = rawText || "";
-    const firstLine = text.split("\n")[0] || text;
-    const title = firstLine.trim().slice(0, 80) + (firstLine.length > 80 ? "…" : "");
-
-    let contentHtml = "";
-    let contentRestHtml = "";
-
-    if (rawHtml) {
-        const safeHtml = sanitizeHtmlForNews(rawHtml);
-        const parts = safeHtml.split(/<br\s*\/?>/gi);
-        contentHtml = safeHtml;
-        contentRestHtml = parts.length > 1 ? parts.slice(1).join("<br>").trim() : "";
-    } else {
-        contentHtml = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>") || "—";
-        const restText = text.includes("\n") ? text.split("\n").slice(1).join("\n").trim() : "";
-        contentRestHtml = restText ? restText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>") : "";
-    }
-
-    return { title, contentHtml, contentRestHtml };
-}
-
-function parseTelegramFeedHtml(html) {
-    const items = [];
-    try {
-        let pos = 0;
-        while (true) {
-            const block = findMessageBlockBounds(html, pos);
-            if (!block) break;
-            pos = block.end;
-            const content = block.content;
-
-            const linkMatch = content.match(/href="https?:\/\/t\.me\/([^"/]+)\/(\d+)"/);
-            const postId = linkMatch ? parseInt(linkMatch[2], 10) : 0;
-
-            const timeMatch = content.match(/<time[^>]*datetime="([^"]+)"/);
-            const { dateUnix, dateStr } = parseTelegramDate(timeMatch);
-
-            const { title, contentHtml, contentRestHtml } = extractMessageContent(content);
-
-            items.push({
-                id: postId || dateUnix || items.length,
-                date: dateStr,
-                dateUnix,
-                title: title || "Без заголовка",
-                contentRestHtml,
-                contentHtml: contentHtml || "—",
-                photoFileId: null
-            });
-        }
-    } catch (e) {
-        log("ERROR", `Parse error: ${e.message}`);
-    }
-    return items;
-}
-
-function fetchChannelFeedFromWeb(username) {
-    if (!username) return Promise.resolve([]);
-
-    return new Promise((resolve) => {
-        const url = `${TELEGRAM_URL}${username}`;
-        const lib = getHttpLib(url);
-
-        const req = lib.get(url, { timeout: REQUEST_TIMEOUT }, (res) => {
-            let data = "";
-            res.on("data", (chunk) => { data += chunk; });
-            res.on("end", () => resolve(parseTelegramFeedHtml(data)));
-        });
-
-        req.on("error", (err) => {
-            log("ERROR", `Telegram fetch error: ${err.message}`);
-            resolve([]);
-        });
-        req.on("timeout", () => {
-            req.destroy();
-            log("WARN", "Telegram request timeout");
-            resolve([]);
-        });
-    });
-}
-
 // ========== Создание окна ==========
+
+
 
 function createWindow() {
     // Если окно уже существует (было скрыто) — просто показываем его
@@ -524,6 +386,23 @@ function createWindow() {
 
     mainWindow.loadFile("index.html");
 
+    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+        try {
+            const u = new URL(url);
+            if (u.protocol === "https:" || u.protocol === "http:") {
+                shell.openExternal(u.toString());
+            }
+        } catch (e) {}
+        return { action: "deny" };
+    });
+
+    mainWindow.webContents.on("will-navigate", (event, url) => {
+        if (!url.startsWith("file://")) {
+            event.preventDefault();
+            shell.openExternal(url);
+        }
+    });
+
     mainWindow.once("ready-to-show", () => {
         mainWindow.show();
     });
@@ -546,15 +425,16 @@ function createWindow() {
 const GITHUB_REPO = 'fixsirt/FixLauncher';
 let latestReleaseInfo = null;
 
-async function checkGitHubUpdate() {
-    try {
-        const currentVersion = app.getVersion();
-        log('INFO', `Checking for updates. Current version: ${currentVersion}`);
-        const apiUrl = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
+function versionToInt(v) {
+    return v.split('.').map(Number).reduce((a, b) => a * 1000 + b, 0);
+}
+
+async function fetchJsonWithRetry(url, attempts = 3, timeout = 10000) {
+    for (let i = 1; i <= attempts; i++) {
         const rawData = await new Promise((resolve) => {
-            const req = require('https').get(apiUrl, {
+            const req = require('https').get(url, {
                 headers: { 'User-Agent': 'FixLauncher-Updater' },
-                timeout: 10000
+                timeout
             }, (res) => {
                 let data = '';
                 res.on('data', chunk => data += chunk);
@@ -563,15 +443,21 @@ async function checkGitHubUpdate() {
             req.on('error', () => resolve(null));
             req.on('timeout', () => { req.destroy(); resolve(null); });
         });
-        if (!rawData) throw new Error('Empty response from GitHub API');
-        const release = JSON.parse(rawData);
+        if (rawData) return JSON.parse(rawData);
+        await new Promise((r) => setTimeout(r, 500 * i));
+    }
+    return null;
+}
+
+async function checkGitHubUpdate() {
+    try {
+        const currentVersion = app.getVersion();
+        log('INFO', `Checking for updates. Current version: ${currentVersion}`);
+        const apiUrl = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
+        const release = await fetchJsonWithRetry(apiUrl, 3, 10000);
+        if (!release) throw new Error('Empty response from GitHub API');
         const latestVersion = (release.tag_name || '').replace(/^[^\d]*/i, '').replace(/[^\d.].*/,'').trim();
         log('INFO', `Latest version on GitHub: ${latestVersion}`);
-
-        function versionToInt(v) {
-            return v.split('.').map(Number).reduce((a, b) => a * 1000 + b, 0);
-        }
-
         if (versionToInt(latestVersion) > versionToInt(currentVersion)) {
             // Найти .exe или платформо-специфичный ассет
             const platform = process.platform;
@@ -703,15 +589,17 @@ ipcMain.handle("get-news", async () => {
         const items = parseNewsMd(md).slice(0, NEWS_LAST_N_POSTS);
         newsCache.items = items;
         newsCache.timestamp = now;
+        writeNewsDiskCache(items);
         log("INFO", `Parsed ${items.length} news items from NEWS.md`);
         return { ok: true, items, cached: false };
     } catch (err) {
         log("ERROR", `News fetch error: ${err.message}`);
-        // Не обновляем newsCache.timestamp при ошибке — чтобы следующий запрос повторил попытку
+        const fallbackItems = newsCache.items.length > 0 ? newsCache.items : readNewsDiskCache();
         return {
-            ok: newsCache.items.length > 0,
+            ok: fallbackItems.length > 0,
             error: err.message || "Ошибка загрузки",
-            items: newsCache.items
+            items: fallbackItems,
+            cached: fallbackItems.length > 0
         };
     }
 });
@@ -733,6 +621,13 @@ ipcMain.handle("open-file-dialog", async (event, options) => {
         title: options?.title || "Выберите файл",
         properties: ["openFile"]
     });
+});
+
+ipcMain.handle('log', (event, message, level = 'INFO') => {
+    const safeLevel = String(level || 'INFO').toUpperCase();
+    const safeMessage = typeof message === 'string' ? message : JSON.stringify(message);
+    log(safeLevel, `[renderer] ${safeMessage}`);
+    return true;
 });
 
 // Закрыть окно
@@ -774,8 +669,19 @@ ipcMain.handle("discord-set-idle", () => {
 });
 
 // Открытие ссылки в браузере (для шаринга)
-ipcMain.handle("open-external", (event, url) => {
-    shell.openExternal(url);
+ipcMain.handle('open-external', (event, url) => {
+    try {
+        const parsed = new URL(String(url || ''));
+        if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+            log('WARN', `Blocked open-external with unsupported protocol: ${parsed.protocol}`);
+            return false;
+        }
+        shell.openExternal(parsed.toString());
+        return true;
+    } catch (e) {
+        log('WARN', `Blocked open-external with invalid URL: ${url}`);
+        return false;
+    }
 });
 
 ipcMain.handle("copy-image-to-clipboard", (event, dataUrl, text) => {
@@ -814,12 +720,73 @@ ipcMain.handle("save-share-image", async (event, dataUrl) => {
     }
 });
 
+
+ipcMain.handle('run-diagnostics', async () => {
+    const checks = [];
+    const basePath = getLauncherBasePath(process.platform, require('os').homedir(), process.env.APPDATA);
+
+    try {
+        if (!fs.existsSync(basePath)) fs.mkdirSync(basePath, { recursive: true });
+        const probe = path.join(basePath, '.write-test');
+        fs.writeFileSync(probe, 'ok');
+        fs.unlinkSync(probe);
+        checks.push({ name: 'Data directory writable', ok: true, details: basePath });
+    } catch (e) {
+        checks.push({ name: 'Data directory writable', ok: false, details: e.message });
+    }
+
+    checks.push({ name: 'News disk cache', ok: fs.existsSync(NEWS_CACHE_FILE), details: NEWS_CACHE_FILE });
+    checks.push({ name: 'Debug log present', ok: fs.existsSync(LOG_FILE), details: LOG_FILE });
+
+    try {
+        const release = await fetchJsonWithRetry(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`, 1, 6000);
+        checks.push({ name: 'GitHub API reachability', ok: !!release, details: release ? 'ok' : 'failed' });
+    } catch (e) {
+        checks.push({ name: 'GitHub API reachability', ok: false, details: e.message });
+    }
+
+    return {
+        platform: process.platform,
+        checks,
+        generatedAt: Date.now()
+    };
+});
+
+ipcMain.handle('export-debug-log', async () => {
+    try {
+        const { filePath } = await dialog.showSaveDialog({
+            title: 'Экспорт debug.log',
+            defaultPath: `fixlauncher-debug-${Date.now()}.log`,
+            filters: [{ name: 'Log', extensions: ['log', 'txt'] }]
+        });
+
+        if (!filePath) return null;
+        if (!fs.existsSync(LOG_FILE)) {
+            fs.writeFileSync(filePath, 'No debug log yet', 'utf8');
+        } else {
+            fs.copyFileSync(LOG_FILE, filePath);
+        }
+        return filePath;
+    } catch (e) {
+        log('ERROR', `Export debug log failed: ${e.message}`);
+        return null;
+    }
+});
+
+function registerSafePermissionHandler() {
+    session.defaultSession.setPermissionRequestHandler((wc, permission, callback) => {
+        callback(false);
+    });
+}
+
 // ========== Жизненный цикл ==========
+
 
 app.whenReady().then(() => {
     log("INFO", "App ready [PLAYTIME-BUILD v3]");
     initPlaytimeOnStart();
     initDiscordRPC();
+    registerSafePermissionHandler();
     createWindow();
     // Проверяем обновления через 3 сек после запуска (чтобы окно успело загрузиться)
     setTimeout(() => checkGitHubUpdate(), 3000);
@@ -840,6 +807,7 @@ app.on("window-all-closed", () => {
 app.on("activate", () => {
     log("INFO", "App activated");
     if (BrowserWindow.getAllWindows().length === 0) {
+        registerSafePermissionHandler();
         createWindow();
     }
 });
