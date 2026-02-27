@@ -273,6 +273,16 @@
                     </button>
                     <small class="info-text">Нажмите чтобы выбрать опции</small>
                 </div>
+
+                <div class="settings-card">
+                    <div class="settings-card-icon">🩺</div>
+                    <label>Диагностика лаунчера</label>
+                    <div class="path-input-group" style="display:flex; gap:8px;">
+                        <button class="browse-btn" id="run-diagnostics-btn" type="button">Проверить</button>
+                        <button class="browse-btn" id="export-logs-btn" type="button">Экспорт логов</button>
+                    </div>
+                    <small class="info-text" id="diagnostics-status">Проверка системы и экспорт debug.log</small>
+                </div>
             </div>
 
             <button class="play-btn" id="save-settings">

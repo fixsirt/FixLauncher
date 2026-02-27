@@ -10,9 +10,8 @@ const { getVanillaSunsPath } = require('./settings');
 /**
  * Сохранить учётные данные
  * @param {string} username
- * @param {string} password
  */
-function saveCredentials (username, password) {
+function saveCredentials (username) {
     try {
         const vanillaSunsPath = getVanillaSunsPath();
         const credentialsPath = path.join(vanillaSunsPath, 'credentials.json');
@@ -22,8 +21,7 @@ function saveCredentials (username, password) {
         }
 
         const credentials = {
-            username: username || '',
-            password: password || ''
+            username: username || ''
         };
 
         fs.writeFileSync(credentialsPath, JSON.stringify(credentials, null, 2), 'utf8');
@@ -45,16 +43,19 @@ function loadCredentials () {
         if (fs.existsSync(credentialsPath)) {
             const data = fs.readFileSync(credentialsPath, 'utf8');
             const credentials = JSON.parse(data);
+            if (Object.prototype.hasOwnProperty.call(credentials, 'password')) {
+                delete credentials.password;
+                fs.writeFileSync(credentialsPath, JSON.stringify({ username: credentials.username || '' }, null, 2), 'utf8');
+            }
             return {
-                username: credentials.username || '',
-                password: credentials.password || ''
+                username: credentials.username || ''
             };
         }
     } catch (error) {
         console.error('Error loading credentials:', error);
     }
 
-    return { username: '', password: '' };
+    return { username: '' };
 }
 
 module.exports = {
