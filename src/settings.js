@@ -5,6 +5,7 @@
 
 const path = require('path');
 const os = require('os');
+const { getLauncherBasePath } = require('./paths');
 
 const DEFAULT_SETTINGS = {
     ram: '4',
@@ -17,16 +18,7 @@ const DEFAULT_SETTINGS = {
  * @returns {string}
  */
 function getDefaultMinecraftPath () {
-    const osType = os.platform();
-
-    if (osType === 'win32') {
-        const appData = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-        return path.join(appData, '.fixlauncher');
-    } else if (osType === 'darwin') {
-        return path.join(os.homedir(), 'Library', 'Application Support', 'fixlauncher');
-    } else {
-        return path.join(os.homedir(), '.fixlauncher');
-    }
+    return getLauncherBasePath(os.platform(), os.homedir(), process.env.APPDATA);
 }
 
 /**

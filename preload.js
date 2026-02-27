@@ -6,7 +6,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getNews: () => ipcRenderer.invoke('get-news'),
     
     // Диалоги
-    openFileDialog: (options) => ipcRenderer.invoke('open-folder-dialog', options),
+    openFolderDialog: () => ipcRenderer.invoke('open-folder-dialog'),
     openFile: (options) => ipcRenderer.invoke('open-file-dialog', options),
     
     // Управление окном
@@ -22,6 +22,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     
     // Логирование
     log: (message, level) => ipcRenderer.invoke('log', message, level),
+
+    // Диагностика и логи
+    runDiagnostics: () => ipcRenderer.invoke('run-diagnostics'),
+    exportDebugLog: () => ipcRenderer.invoke('export-debug-log'),
     
     // События
     onUpdateProgress: (callback) => {

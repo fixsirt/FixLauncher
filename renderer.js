@@ -7,16 +7,13 @@ const http = require('http');
 const AdmZip = require('adm-zip');
 const { addUserJVMArgs } = require('./src/jvm-args');
 const { initServersPanel } = require('./src/servers');
+const { getPlaytimePath } = require('./src/paths');
+const { formatDiagnosticsReport } = require('./src/renderer-support');
 
 // ─── PLAYTIME DISPLAY (запись — в main.js) ──────────────────────────────────
 function _playtimeFilePath() {
     try {
-        const p = os.platform();
-        let base;
-        if (p === 'win32') base = path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), '.fixlauncher');
-        else if (p === 'darwin') base = path.join(os.homedir(), 'Library', 'Application Support', 'vanilla-suns');
-        else base = path.join(os.homedir(), '.vanilla-suns');
-        return path.join(base, 'launcher-playtime.json');
+        return getPlaytimePath(os.platform(), os.homedir(), process.env.APPDATA);
     } catch(e) { return null; }
 }
 function playtimeGetTotal() {
@@ -966,8 +963,8 @@ function getVanillaSunsPath() {
     return minecraftPath;
 }
 
-// Сохранение логина и пароля в файл
-function saveCredentials(username, password) {
+// Сохранение только логина в файл
+function saveCredentials(username) {
     try {
         const vanillaSunsPath = getVanillaSunsPath();
         const credentialsPath = path.join(vanillaSunsPath, 'credentials.json');
@@ -979,8 +976,7 @@ function saveCredentials(username, password) {
         
         // Сохраняем данные
         const credentials = {
-            username: username || '',
-            password: password || ''
+            username: username || ''
         };
         
         fs.writeFileSync(credentialsPath, JSON.stringify(credentials, null, 2), 'utf8');
@@ -990,7 +986,7 @@ function saveCredentials(username, password) {
     }
 }
 
-// Загрузка логина и пароля из файла
+// Загрузка логина из файла
 function loadCredentials() {
     try {
         const vanillaSunsPath = getVanillaSunsPath();
@@ -999,16 +995,19 @@ function loadCredentials() {
         if (fs.existsSync(credentialsPath)) {
             const data = fs.readFileSync(credentialsPath, 'utf8');
             const credentials = JSON.parse(data);
+            if (Object.prototype.hasOwnProperty.call(credentials, 'password')) {
+                delete credentials.password;
+                fs.writeFileSync(credentialsPath, JSON.stringify({ username: credentials.username || '' }, null, 2), 'utf8');
+            }
             return {
-                username: credentials.username || '',
-                password: credentials.password || ''
+                username: credentials.username || ''
             };
         }
     } catch (error) {
         console.error('Error loading credentials:', error);
     }
     
-    return { username: '', password: '' };
+    return { username: '' };
 }
 
 // Загрузка и сохранение имени игрока
@@ -1022,7 +1021,7 @@ function initPlayerName() {
     
     const saveData = () => {
         const username = playerNameInput ? playerNameInput.value : '';
-        saveCredentials(username, '');
+        saveCredentials(username);
     };
     
     if (playerNameInput) {
@@ -2614,7 +2613,7 @@ function initModsPanel() {
         modrinthSearchInput.addEventListener('keydown', e => { if (e.key === 'Enter') doModrinthSearch(); });
     }
 
-    window.installModFromModrinth = function (projectIdOrSlug, buttonEl, projectType = 'mod') {
+    function installModFromModrinth (projectIdOrSlug, buttonEl, projectType = 'mod') {
         const version = getSelectedVersion();
         const gameVersions = [version.mcVersion || '1.21.4'];
         // Shaders and resourcepacks don't filter by loader — pass empty array
@@ -2825,7 +2824,9 @@ function initModsPanel() {
                 }).catch(fail);
             })
             .catch(fail);
-    };
+    }
+
+    window.installModFromModrinth = installModFromModrinth;
 }
 
 // Проверка и загрузка версии Minecraft
@@ -3962,7 +3963,7 @@ function isConfigFile(filePath, basePath) {
         // Проверяем, является ли файл файлом настроек и находится ли он в корневой папке
         // (проверяем, что перед именем файла нет подпапок в пути)
         if (SETTINGS_FILES.includes(fileName)) {
-            const pathWithoutBase = normalizedPath.replace(/^.*[\/\\]/, '');
+            const pathWithoutBase = normalizedPath.replace(/^.*[/\\]/, '');
             if (pathWithoutBase.toLowerCase() === fileName) {
                 return true;
             }
@@ -4094,7 +4095,7 @@ function downloadAssemblyFromGitHubDirect(githubRepo, targetPath, versionType) {
         updateProgress(28, 'Загрузка файлов напрямую с GitHub...');
         
         // Парсим URL репозитория
-        const repoMatch = githubRepo.match(/github\.com\/([^\/]+)\/([^\/]+)(?:\.git)?$/);
+        const repoMatch = githubRepo.match(/github\.com\/([^/]+)\/([^/]+)(?:\.git)?$/);
         if (!repoMatch) {
             reject(new Error('Неверный URL репозитория GitHub'));
             return;
@@ -4304,7 +4305,7 @@ function downloadAssemblyFromGitHubAPI(githubRepo, targetPath, versionType) {
     return new Promise((resolve, reject) => {
         console.log('Using GitHub API method (may have rate limits)');
         // Парсим URL репозитория
-        const repoMatch = githubRepo.match(/github\.com\/([^\/]+)\/([^\/]+)(?:\.git)?$/);
+        const repoMatch = githubRepo.match(/github\.com\/([^/]+)\/([^/]+)(?:\.git)?$/);
         if (!repoMatch) {
             reject(new Error('Неверный URL репозитория GitHub'));
             return;
@@ -4375,7 +4376,7 @@ function downloadGitHubDirectory(apiUrl, targetPath, owner, repo) {
 // Получение списка всех файлов из GitHub репозитория
 function getGitHubFileList(githubRepo) {
     return new Promise((resolve, reject) => {
-        const repoMatch = githubRepo.match(/github\.com\/([^\/]+)\/([^\/]+)(?:\.git)?$/);
+        const repoMatch = githubRepo.match(/github\.com\/([^/]+)\/([^/]+)(?:\.git)?$/);
         if (!repoMatch) {
             reject(new Error('Неверный URL репозитория GitHub'));
             return;
@@ -4583,7 +4584,7 @@ function repairAssembly(assemblyPath, githubRepo, missingFiles, corruptedFiles) 
         console.log(`Repairing assembly: downloading ${allFilesToDownload.length} files...`);
         updateProgress(27, `Восстановление сборки: ${allFilesToDownload.length} файлов...`);
         
-        const repoMatch = githubRepo.match(/github\.com\/([^\/]+)\/([^\/]+)(?:\.git)?$/);
+        const repoMatch = githubRepo.match(/github\.com\/([^/]+)\/([^/]+)(?:\.git)?$/);
         if (!repoMatch) {
             reject(new Error('Invalid GitHub repository URL'));
             return;
@@ -5785,7 +5786,7 @@ function getMinecraftClasspath(minecraftPath, withMods, versionOverride = null) 
             // Исключаем стары�� версии ASM (9.6 и ниже)
             if (jarPath.includes('org/ow2/asm') || jarPath.includes('org\\ow2\\asm')) {
                 // Проверяем версию в пути
-                const versionMatch = jarPath.match(/asm[\/\\](\d+)\.(\d+)/);
+                const versionMatch = jarPath.match(/asm[/\\](\d+)\.(\d+)/);
                 if (versionMatch) {
                     const major = parseInt(versionMatch[1]);
                     const minor = parseInt(versionMatch[2]);
@@ -5823,7 +5824,7 @@ function getMinecraftClasspath(minecraftPath, withMods, versionOverride = null) 
             const asmJars = findJars(asmLibsPath);
             asmJars.forEach(jar => {
                 // Добавляем только версии 9.9 и выше
-                const versionMatch = jar.match(/asm[\/\\](\d+)\.(\d+)/);
+                const versionMatch = jar.match(/asm[/\\](\d+)\.(\d+)/);
                 if (versionMatch) {
                     const major = parseInt(versionMatch[1]);
                     const minor = parseInt(versionMatch[2]);
@@ -5933,7 +5934,7 @@ function initPlayButton() {
         playButton.addEventListener('click', () => {
             const playerNameInput = document.getElementById('player-name');
             const username = playerNameInput ? playerNameInput.value : '';
-            saveCredentials(username, '');
+            saveCredentials(username);
             playButton.disabled = true;
             playButton.textContent = 'ЗАПУСК...';
             try {
@@ -6240,6 +6241,49 @@ function splashHide() {
 }
 // ──────────────────────────────────────────────────────────────────────────
 
+function initSupportTools () {
+    const diagnosticsBtn = document.getElementById('run-diagnostics-btn');
+    const exportBtn = document.getElementById('export-logs-btn');
+    const statusEl = document.getElementById('diagnostics-status');
+
+    if (diagnosticsBtn) {
+        diagnosticsBtn.addEventListener('click', async () => {
+            diagnosticsBtn.disabled = true;
+            if (statusEl) statusEl.textContent = 'Выполняется диагностика...';
+            try {
+                const { ipcRenderer } = require('electron');
+                const result = await ipcRenderer.invoke('run-diagnostics');
+                const report = formatDiagnosticsReport(result);
+                if (statusEl) statusEl.textContent = 'Диагностика завершена';
+                showLauncherAlert(report, 'Отчёт диагностики');
+            } catch (e) {
+                if (statusEl) statusEl.textContent = 'Ошибка диагностики';
+                showLauncherAlert('Диагностика завершилась ошибкой: ' + e.message);
+            } finally {
+                diagnosticsBtn.disabled = false;
+            }
+        });
+    }
+
+    if (exportBtn) {
+        exportBtn.addEventListener('click', async () => {
+            exportBtn.disabled = true;
+            try {
+                const { ipcRenderer } = require('electron');
+                const filePath = await ipcRenderer.invoke('export-debug-log');
+                if (filePath) {
+                    if (statusEl) statusEl.textContent = 'Лог экспортирован: ' + filePath;
+                    showToast('Лог экспортирован', 'success');
+                }
+            } catch (e) {
+                showToast('Не удалось экспортировать лог', 'error');
+            } finally {
+                exportBtn.disabled = false;
+            }
+        });
+    }
+}
+
 async function init() {
     try {
         splashSet(10, 'Инициализация интерфейса...');
@@ -6255,6 +6299,8 @@ async function init() {
         initBrowseButton();
         console.log('[INIT] step: saveButton');
         initSaveButton();
+        console.log('[INIT] step: supportTools');
+        initSupportTools();
         console.log('[INIT] step: links');
         initLinks();
         console.log('[INIT] step: playerName');
@@ -6622,7 +6668,7 @@ function showSharePopup() {
             }
         }).catch(e => console.warn('Image gen error:', e));
 
-        function showToast(msg, color = 'rgba(100,255,160,0.95)', bg = 'rgba(0,180,100,0.15)', border = 'rgba(0,200,100,0.3)') {
+        const showToast = (msg, color = 'rgba(100,255,160,0.95)', bg = 'rgba(0,180,100,0.15)', border = 'rgba(0,200,100,0.3)') => {
             const t = document.getElementById('share-toast');
             if (!t) return;
             t.textContent = msg;
@@ -6634,19 +6680,19 @@ function showSharePopup() {
             requestAnimationFrame(() => { t.style.animation = 'fadeInToast .25s ease'; });
         }
 
-        function openExternal(url) {
+        const openExternal = (url) => {
             try {
                 const { ipcRenderer: _ipc } = require('electron');
                 _ipc.invoke('open-external', url);
             } catch(e) { window.open(url, '_blank'); }
         }
 
-        function markShown() {
+        const markShown = () => {
             localStorage.setItem('fixlauncher-share-shown', '1');
         }
 
         // Копируем картинку в буфер через Electron clipboard
-        async function copyImageToClipboard(dataUrl, text) {
+        const copyImageToClipboard = async (dataUrl, text) => {
             try {
                 const { ipcRenderer: _ipc } = require('electron');
                 await _ipc.invoke('copy-image-to-clipboard', dataUrl, text || '');
@@ -6697,7 +6743,7 @@ function showSharePopup() {
             });
         });
 
-        function showShareInstructions(imgOk, caption, onOk) {
+        const showShareInstructions = (imgOk, caption, onOk) => {
             // Убираем старый модал если есть
             const old = document.getElementById('share-instruction-modal');
             if (old) old.remove();
@@ -6793,10 +6839,6 @@ function showSharePopup() {
     } catch(e) {
         console.error('Share popup error:', e);
     }
-}
-
-function escapeHtml(str) {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // Запускаем проверку после инициализации
