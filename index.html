@@ -277,7 +277,7 @@
                 <div class="settings-card">
                     <div class="settings-card-icon">🩺</div>
                     <label>Диагностика лаунчера</label>
-                    <div class="path-input-group" style="display:flex; gap:8px;">
+                    <div class="path-input-group settings-actions-row">
                         <button class="browse-btn" id="run-diagnostics-btn" type="button">Проверить</button>
                         <button class="browse-btn" id="export-logs-btn" type="button">Экспорт логов</button>
                     </div>
@@ -287,21 +287,21 @@
                 <div class="settings-card">
                     <div class="settings-card-icon">🚀</div>
                     <label>Профили и ускорение</label>
-                    <div class="path-input-group" style="display:flex; gap:8px; flex-wrap: wrap;">
-                        <select id="game-profile-select" class="field-input" style="max-width:220px;">
+                    <div class="path-input-group profile-controls-row">
+                        <select id="game-profile-select" class="field-input profile-select">
                             <option value="pvp">PvP (сбаланс.)</option>
                             <option value="lowend">Low-end PC</option>
                             <option value="shaders">Shaders</option>
                             <option value="stream">Stream</option>
                         </select>
-                        <button class="browse-btn" id="apply-profile-btn" type="button">Применить профиль</button>
+                        <button class="browse-btn profile-apply-btn" id="apply-profile-btn" type="button">Применить профиль</button>
                     </div>
-                    <div class="path-input-group" style="display:flex; gap:8px; flex-wrap: wrap; margin-top:8px;">
+                    <div class="path-input-group profile-actions-row">
                         <button class="browse-btn" id="quick-fix-btn" type="button">Починить всё</button>
                         <button class="browse-btn" id="detect-conflicts-btn" type="button">Проверить конфликты модов</button>
                         <button class="browse-btn" id="analyze-crash-btn" type="button">Разобрать последний краш</button>
                     </div>
-                    <label style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+                    <label class="turbo-toggle-label">
                         <input type="checkbox" id="turbo-mode-toggle">
                         Турбо-запуск (отложенная загрузка тяжёлых панелей)
                     </label>
