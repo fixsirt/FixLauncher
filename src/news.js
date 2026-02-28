@@ -1,182 +1,77 @@
 /**
- * Модуль работы с новостями из Telegram
+ * Модуль работы с новостями из GitHub NEWS.md
  * @module news
  */
 
 const https = require('https');
-const http = require('http');
-const { stripHtmlToText, sanitizeHtmlForNews, formatDate } = require('./utils');
 
-const NEWS_CHANNEL_USERNAME = 'rodya61_prod';
-const NEWS_LAST_N_POSTS = 5;
+const NEWS_MD_URL = 'https://raw.githubusercontent.com/fixsirt/FixLauncher/main/NEWS.md';
+const REQUEST_TIMEOUT = 7000;
+const NEWS_LAST_N_POSTS = 10;
 
-/**
- * Найти границы полного блока <div class="...tgme_widget_message...">
- * @param {string} html
- * @param {number} startIndex
- * @returns {Object|null}
- */
-function findMessageBlockBounds (html, startIndex) {
-    const openTag = /<div\s+[^>]*class="[^"]*tgme_widget_message(?!_text)[^"]*"[^>]*>/i;
-    const match = html.slice(startIndex).match(openTag);
-    if (!match) return null;
+function parseNewsMd (md) {
+    const blocks = String(md || '')
+        .split(/\n---+\n/)
+        .map((block) => block.trim())
+        .filter(Boolean);
 
-    const openStart = startIndex + match.index;
-    const openEnd = openStart + match[0].length;
-    let depth = 1;
-    let i = openEnd;
+    return blocks.map((block, index) => {
+        const lines = block.split('\n');
+        const first = (lines[0] || '').trim();
+        const titleMatch = first.match(/^##\s+(.+?)(?:\s+\((.+?)\))?$/);
 
-    while (i < html.length && depth > 0) {
-        const nextOpen = html.indexOf('<div', i);
-        const nextClose = html.indexOf('</div>', i);
-        if (nextClose === -1) break;
+        const title = titleMatch ? titleMatch[1].trim() : first.replace(/^#+\s*/, '').trim() || `Новость #${index + 1}`;
+        const date = titleMatch && titleMatch[2] ? titleMatch[2].trim() : '';
+        const body = lines.slice(1).join('\n').trim();
 
-        if (nextOpen !== -1 && nextOpen < nextClose) {
-            depth++;
-            i = nextOpen + 4;
-        } else {
-            depth--;
-            i = nextClose + 6;
-            if (depth === 0) {
-                return { start: openStart, end: i, content: html.slice(openEnd, i - 6) };
-            }
-        }
-    }
-    return null;
-}
-
-/**
- * Парсинг HTML ленты t.me/s
- * @param {string} html
- * @param {string} channelUsername
- * @returns {Array}
- */
-function parseTelegramFeedHtml (html, channelUsername) {
-    const items = [];
-
-    try {
-        let pos = 0;
-        for (;;) {
-            const block = findMessageBlockBounds(html, pos);
-            if (!block) break;
-            pos = block.end;
-            const content = block.content;
-
-            // Ссылка на пост: t.me/channel/123
-            const linkMatch = content.match(/href="https?:\/\/t\.me\/([^"/]+)\/(\d+)"/);
-            const postId = linkMatch ? parseInt(linkMatch[2], 10) : 0;
-
-            // Время: <time datetime="...">
-            const timeMatch = content.match(/<time[^>]*datetime="([^"]+)"/);
-            let dateUnix = 0;
-            let dateStr = '';
-
-            if (timeMatch) {
-                const d = new Date(timeMatch[1]);
-                dateUnix = Math.floor(d.getTime() / 1000);
-                dateStr = formatDate(d);
-            }
-
-            // Текст: ищем div с tgme_widget_message_text
-            let rawText = '';
-            let rawHtml = '';
-            const textDivRe = /<div[^>]*class="[^"]*tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/i;
-            const textDivMatch = content.match(textDivRe);
-
-            if (textDivMatch) {
-                rawHtml = textDivMatch[1];
-                rawText = stripHtmlToText(rawHtml);
-            }
-
-            if (!rawText && !rawHtml) {
-                const bubbleRe = /<div[^>]*tgme_widget_message_bubble[^>]*>([\s\S]*?)<\/div>/i;
-                const bubbleMatch = content.match(bubbleRe);
-                if (bubbleMatch) {
-                    rawHtml = bubbleMatch[1];
-                    rawText = stripHtmlToText(rawHtml);
-                }
-            }
-
-            const firstLine = rawText.split('\n')[0] || rawText;
-            const title = firstLine.trim().slice(0, 80) + (firstLine.length > 80 ? '…' : '');
-
-            let contentHtml = '';
-            let contentRestHtml = '';
-
-            if (rawHtml) {
-                const safeHtml = sanitizeHtmlForNews(rawHtml);
-                const parts = safeHtml.split(/<br\s*\/?>/gi);
-                const firstPart = (parts[0] || '').trim();
-                contentHtml = safeHtml;
-                contentRestHtml = parts.length > 1 ? parts.slice(1).join('<br>').trim() : '';
-            } else {
-                contentHtml = rawText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') || '—';
-                const restText = rawText.includes('\n') ? rawText.split('\n').slice(1).join('\n').trim() : '';
-                contentRestHtml = restText ? restText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') : '';
-            }
-
-            items.push({
-                id: postId || dateUnix || items.length,
-                date: dateStr,
-                dateUnix,
-                title: title || 'Без заголовка',
-                contentRestHtml,
-                contentHtml: contentHtml || '—',
-                photoFileId: null
-            });
-        }
-    } catch (e) {
-        console.error('Error parsing Telegram feed:', e);
-    }
-
-    return items;
-}
-
-/**
- * Загрузка постов с публичной страницы t.me/s
- * @param {string} username
- * @returns {Promise<Array>}
- */
-function fetchChannelFeedFromWeb (username) {
-    if (!username) return Promise.resolve([]);
-
-    return new Promise((resolve) => {
-        const url = `https://t.me/s/${username}`;
-        const lib = url.startsWith('https') ? https : http;
-
-        const req = lib.get(url, { timeout: 10000 }, (res) => {
-            let data = '';
-            res.on('data', (chunk) => { data += chunk; });
-            res.on('end', () => {
-                const items = parseTelegramFeedHtml(data, username);
-                resolve(items);
-            });
-        });
-
-        req.on('error', () => resolve([]));
-        req.on('timeout', () => { req.destroy(); resolve([]); });
+        return { title, date, body };
     });
 }
 
-/**
- * Получить новости из Telegram
- * @returns {Promise<Object>}
- */
+function fetchNewsMd (url = NEWS_MD_URL) {
+    return new Promise((resolve) => {
+        const req = https.get(url, { timeout: REQUEST_TIMEOUT }, (res) => {
+            if (res.statusCode !== 200) {
+                res.resume();
+                resolve(null);
+                return;
+            }
+
+            let data = '';
+            res.on('data', (chunk) => { data += chunk; });
+            res.on('end', () => resolve(data));
+        });
+
+        req.on('error', () => resolve(null));
+        req.on('timeout', () => {
+            req.destroy();
+            resolve(null);
+        });
+    });
+}
+
 async function getNews () {
     try {
-        const webItems = await fetchChannelFeedFromWeb(NEWS_CHANNEL_USERNAME);
-        webItems.sort((a, b) => (b.dateUnix || 0) - (a.dateUnix || 0));
-        const items = webItems.slice(0, NEWS_LAST_N_POSTS);
-        return { ok: true, items };
+        const md = await fetchNewsMd();
+        if (!md) throw new Error('Empty response from GitHub NEWS.md');
+
+        return {
+            ok: true,
+            items: parseNewsMd(md).slice(0, NEWS_LAST_N_POSTS)
+        };
     } catch (err) {
-        return { ok: false, error: err.message || 'Ошибка загрузки', items: [] };
+        return {
+            ok: false,
+            error: err.message || 'Ошибка загрузки новостей',
+            items: []
+        };
     }
 }
 
 module.exports = {
     getNews,
-    parseTelegramFeedHtml,
-    fetchChannelFeedFromWeb,
-    NEWS_CHANNEL_USERNAME,
+    fetchNewsMd,
+    parseNewsMd,
+    NEWS_MD_URL,
     NEWS_LAST_N_POSTS
 };
