@@ -9,6 +9,7 @@ const { addUserJVMArgs } = require('./src/jvm-args');
 const { initServersPanel } = require('./src/servers');
 const { getPlaytimePath } = require('./src/paths');
 const { formatDiagnosticsReport } = require('./src/renderer-support');
+const { getProfilePreset, detectModConflicts, analyzeCrashText } = require('./src/power-tools');
 
 // ─── PLAYTIME DISPLAY (запись — в main.js) ──────────────────────────────────
 function _playtimeFilePath() {
@@ -6241,6 +6242,119 @@ function splashHide() {
 }
 // ──────────────────────────────────────────────────────────────────────────
 
+function initPowerFeatures () {
+    const profileSelect = document.getElementById('game-profile-select');
+    const applyProfileBtn = document.getElementById('apply-profile-btn');
+    const quickFixBtn = document.getElementById('quick-fix-btn');
+    const detectConflictsBtn = document.getElementById('detect-conflicts-btn');
+    const analyzeCrashBtn = document.getElementById('analyze-crash-btn');
+    const turboToggle = document.getElementById('turbo-mode-toggle');
+
+    if (turboToggle) {
+        turboToggle.checked = localStorage.getItem('launcher-turbo-mode') === '1';
+        turboToggle.addEventListener('change', () => {
+            localStorage.setItem('launcher-turbo-mode', turboToggle.checked ? '1' : '0');
+            showToast(turboToggle.checked ? 'Турбо-режим включён' : 'Турбо-режим выключен', 'info');
+        });
+    }
+
+    if (applyProfileBtn && profileSelect) {
+        applyProfileBtn.addEventListener('click', () => {
+            const preset = getProfilePreset(profileSelect.value);
+            localStorage.setItem('minecraft-ram', preset.ram);
+            localStorage.setItem('jvm-selected-flags', JSON.stringify(preset.jvmFlags));
+            const ramSlider = document.getElementById('ram-slider');
+            const ramValue = document.getElementById('ram-value');
+            if (ramSlider) ramSlider.value = preset.ram;
+            if (ramValue) ramValue.textContent = preset.ram;
+            showLauncherAlert(`Профиль ${preset.name} применён. RAM: ${preset.ram} GB`);
+        });
+    }
+
+    if (quickFixBtn) {
+        quickFixBtn.addEventListener('click', () => {
+            try {
+                const versionId = localStorage.getItem(VERSION_STORAGE_KEY) || DEFAULT_VERSION_ID;
+                const dataPath = getDataPathForVersion(versionId);
+                const dirs = ['mods', 'resourcepacks', 'shaderpacks', 'logs', 'crash-reports'];
+                dirs.forEach((dir) => {
+                    const full = path.join(dataPath, dir);
+                    if (!fs.existsSync(full)) fs.mkdirSync(full, { recursive: true });
+                });
+
+                const modsPath = path.join(dataPath, 'mods');
+                let removed = 0;
+                if (fs.existsSync(modsPath)) {
+                    fs.readdirSync(modsPath).forEach((file) => {
+                        const fp = path.join(modsPath, file);
+                        if (file.endsWith('.jar') && fs.statSync(fp).size === 0) {
+                            fs.unlinkSync(fp);
+                            removed += 1;
+                        }
+                    });
+                }
+
+                showLauncherAlert(`Быстрая починка завершена.
+Создано/проверено папок: ${dirs.length}
+Удалено битых .jar: ${removed}`);
+            } catch (e) {
+                showLauncherAlert('Ошибка быстрой починки: ' + e.message);
+            }
+        });
+    }
+
+    if (detectConflictsBtn) {
+        detectConflictsBtn.addEventListener('click', () => {
+            try {
+                const versionId = localStorage.getItem(VERSION_STORAGE_KEY) || DEFAULT_VERSION_ID;
+                const modsPath = getModsPathForVersion(versionId);
+                if (!fs.existsSync(modsPath)) {
+                    showLauncherAlert('Папка модов не найдена.');
+                    return;
+                }
+                const files = fs.readdirSync(modsPath).filter((f) => f.toLowerCase().endsWith('.jar'));
+                const conflicts = detectModConflicts(files);
+                if (!conflicts.length) {
+                    showLauncherAlert('Явных конфликтов модов не найдено ✅');
+                } else {
+                    showLauncherAlert('Найдены потенциальные конфликты\n- ' + conflicts.join('\n- '), 'Конфликты модов');
+                }
+            } catch (e) {
+                showLauncherAlert('Ошибка проверки модов: ' + e.message);
+            }
+        });
+    }
+
+    if (analyzeCrashBtn) {
+        analyzeCrashBtn.addEventListener('click', () => {
+            try {
+                const versionId = localStorage.getItem(VERSION_STORAGE_KEY) || DEFAULT_VERSION_ID;
+                const dataPath = getDataPathForVersion(versionId);
+                const crashDir = path.join(dataPath, 'crash-reports');
+                const candidates = [];
+                if (fs.existsSync(crashDir)) {
+                    fs.readdirSync(crashDir)
+                        .filter((f) => f.endsWith('.txt'))
+                        .forEach((f) => candidates.push(path.join(crashDir, f)));
+                }
+                if (!candidates.length) {
+                    showLauncherAlert('Краш-логи не найдены.');
+                    return;
+                }
+                candidates.sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
+                const latest = candidates[0];
+                const text = fs.readFileSync(latest, 'utf8');
+                const message = analyzeCrashText(text);
+                showLauncherAlert(`Файл: ${path.basename(latest)}
+
+${message}`, 'Анализ краша');
+            } catch (e) {
+                showLauncherAlert('Ошибка анализа краша: ' + e.message);
+            }
+        });
+    }
+}
+
 function initSupportTools () {
     const diagnosticsBtn = document.getElementById('run-diagnostics-btn');
     const exportBtn = document.getElementById('export-logs-btn');
@@ -6301,6 +6415,8 @@ async function init() {
         initSaveButton();
         console.log('[INIT] step: supportTools');
         initSupportTools();
+        console.log('[INIT] step: powerFeatures');
+        initPowerFeatures();
         console.log('[INIT] step: links');
         initLinks();
         console.log('[INIT] step: playerName');
@@ -6321,14 +6437,23 @@ async function init() {
         loadSettings();
         await new Promise(r => setTimeout(r, 0));
 
-        splashSet(50, 'Загрузка новостей...');
+        const turboMode = localStorage.getItem('launcher-turbo-mode') === '1';
+        splashSet(50, turboMode ? 'Турбо-режим: минимум блокирующих задач...' : 'Загрузка новостей...');
         console.log('[INIT] step: loadNews (background)');
-        loadNews(); // не блокируем — грузится в фоне
+        if (turboMode) {
+            setTimeout(() => loadNews(), 1200);
+        } else {
+            loadNews();
+        }
         await new Promise(r => setTimeout(r, 0));
 
-        splashSet(75, 'Загрузка модов...');
+        splashSet(75, turboMode ? 'Турбо-режим: отложенная загрузка модов...' : 'Загрузка модов...');
         console.log('[INIT] step: loadModsPanel');
-        loadModsPanel();
+        if (turboMode) {
+            setTimeout(() => loadModsPanel(), 1800);
+        } else {
+            loadModsPanel();
+        }
         await new Promise(r => setTimeout(r, 0));
 
         splashSet(100, 'Готово!');
