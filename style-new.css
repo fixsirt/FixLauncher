@@ -634,15 +634,6 @@ input[type="range"] { flex: 1; accent-color: var(--accent-primary, #3b82f6); hei
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-<<<<<<< HEAD
-=======
-    padding-right: 34px;
-    background-image: linear-gradient(45deg, transparent 50%, rgba(255,255,255,0.65) 50%),
-        linear-gradient(135deg, rgba(255,255,255,0.65) 50%, transparent 50%);
-    background-position: calc(100% - 16px) calc(50% + 1px), calc(100% - 11px) calc(50% + 1px);
-    background-size: 5px 5px, 5px 5px;
-    background-repeat: no-repeat;
->>>>>>> f7d31353fa62e5c18778e8d4edb7c4d62bee9f02
 }
 
 .profile-select:focus {

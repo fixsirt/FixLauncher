@@ -30,12 +30,8 @@ function getProfilePreset (profileId) {
 }
 
 function detectModConflicts (fileNames) {
-<<<<<<< HEAD
     const originals = (fileNames || []).map((n) => String(n));
     const names = originals.map((n) => n.toLowerCase());
-=======
-    const names = (fileNames || []).map((n) => String(n).toLowerCase());
->>>>>>> f7d31353fa62e5c18778e8d4edb7c4d62bee9f02
     const conflicts = [];
 
     const pairs = [
@@ -46,7 +42,6 @@ function detectModConflicts (fileNames) {
     ];
 
     pairs.forEach(([a, b]) => {
-<<<<<<< HEAD
         const idxA = names.findIndex((n) => n.includes(a));
         const idxB = names.findIndex((n) => n.includes(b));
         if (idxA !== -1 && idxB !== -1) {
@@ -57,17 +52,11 @@ function detectModConflicts (fileNames) {
                 message: `Конфликт: "${originals[idxA]}" несовместим с "${originals[idxB]}"`
             });
         }
-=======
-        const hasA = names.some((n) => n.includes(a));
-        const hasB = names.some((n) => n.includes(b));
-        if (hasA && hasB) conflicts.push(`${a} ↔ ${b}`);
->>>>>>> f7d31353fa62e5c18778e8d4edb7c4d62bee9f02
     });
 
     return conflicts;
 }
 
-<<<<<<< HEAD
 function parseDependencyError (errorText) {
     if (!errorText || typeof errorText !== 'string') return null;
 
@@ -113,8 +102,6 @@ function parseDependencyError (errorText) {
     return issues.length > 0 ? issues : null;
 }
 
-=======
->>>>>>> f7d31353fa62e5c18778e8d4edb7c4d62bee9f02
 function analyzeCrashText (text) {
     const src = String(text || '').toLowerCase();
 
@@ -135,9 +122,6 @@ function analyzeCrashText (text) {
 module.exports = {
     getProfilePreset,
     detectModConflicts,
-<<<<<<< HEAD
     parseDependencyError,
-=======
->>>>>>> f7d31353fa62e5c18778e8d4edb7c4d62bee9f02
     analyzeCrashText
 };

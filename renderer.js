@@ -6445,7 +6445,6 @@ function initPowerFeatures () {
         });
     }
 
-<<<<<<< HEAD
     // ── Profile modal ──
     const PROFILES = [
         { value: 'pvp',    label: 'PvP (сбаланс.)',  desc: 'Оптимальный баланс производительности для PvP' },
@@ -6517,8 +6516,6 @@ function initPowerFeatures () {
         });
     }
 
-=======
->>>>>>> f7d31353fa62e5c18778e8d4edb7c4d62bee9f02
     if (applyProfileBtn && profileSelect) {
         applyProfileBtn.addEventListener('click', () => {
             const preset = getProfilePreset(profileSelect.value);
@@ -6555,7 +6552,6 @@ function initPowerFeatures () {
                     });
                 }
 
-<<<<<<< HEAD
                 showLauncherAlert(
                     `✅ Быстрая починка завершена!
 
@@ -6576,11 +6572,6 @@ function initPowerFeatures () {
                     `— Удалено битых .jar: ${removed}`,
                     'Починить всё'
                 );
-=======
-                showLauncherAlert(`Быстрая починка завершена.
-Создано/проверено папок: ${dirs.length}
-Удалено битых .jar: ${removed}`);
->>>>>>> f7d31353fa62e5c18778e8d4edb7c4d62bee9f02
             } catch (e) {
                 showLauncherAlert('Ошибка быстрой починки: ' + e.message);
             }
@@ -6601,12 +6592,8 @@ function initPowerFeatures () {
                 if (!conflicts.length) {
                     showLauncherAlert('Явных конфликтов модов не найдено ✅');
                 } else {
-<<<<<<< HEAD
                     const conflictText = conflicts.map(c => `• ${c.message || c.pair}`).join('\n');
                     showLauncherAlert('Найдены потенциальные конфликты:\n' + conflictText, 'Конфликты модов');
-=======
-                    showLauncherAlert('Найдены потенциальные конфликты\n- ' + conflicts.join('\n- '), 'Конфликты модов');
->>>>>>> f7d31353fa62e5c18778e8d4edb7c4d62bee9f02
                 }
             } catch (e) {
                 showLauncherAlert('Ошибка проверки модов: ' + e.message);
