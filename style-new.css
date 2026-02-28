@@ -186,7 +186,7 @@ body {
     position: relative;
 }
 .content-area::-webkit-scrollbar { width: 4px; }
-.content-area::-webkit-scrollbar-track { background: transparent; }
+.content-area::-webkit-scrollbar-track { background: rgba(8,16,32,0.45); }
 .content-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
 
 /* ── PANEL OVERRIDES ── */
@@ -198,16 +198,38 @@ body {
     border-radius: 0 !important;
     border: none !important;
     border-left: none !important;
-    min-height: 100vh;
+    min-height: 100%;
+    flex: 1;
     padding: 32px 36px !important;
-    background: rgba(8, 16, 32, 0.45) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     box-shadow: none !important;
     /* Do NOT override opacity/transform — let JS + keyframes handle it */
     transition: none !important;
 }
 .panel::before { display: none !important; }
+
+/* Fixed blur overlay that always covers the full content area viewport */
+.content-area::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 220px; /* sidebar width */
+    right: 0;
+    bottom: 0;
+    background: rgba(8, 16, 32, 0.45);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Ensure panel content sits above the fixed blur */
+.panel > * {
+    position: relative;
+    z-index: 1;
+}
 
 /* Active panel: original opacity+scale animation */
 .panel.active {
@@ -596,6 +618,58 @@ input[type="range"] { flex: 1; accent-color: var(--accent-primary, #3b82f6); hei
 }
 .browse-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
 
+.settings-actions-row,
+.profile-controls-row,
+.profile-actions-row {
+    flex-wrap: wrap;
+}
+
+.profile-controls-row {
+    align-items: stretch;
+}
+
+.profile-select {
+    max-width: 220px;
+    min-width: 220px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.profile-select:focus {
+    border-color: var(--accent-primary, #3b82f6);
+    box-shadow: 0 0 0 3px var(--accent-glow, rgba(59,130,246,0.2));
+}
+
+.profile-select option {
+    background: #2a2037;
+    color: #f1f5f9;
+}
+
+.profile-apply-btn {
+    min-width: 140px;
+}
+
+.profile-actions-row {
+    margin-top: 8px;
+}
+
+.turbo-toggle-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    color: rgba(255,255,255,0.7);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.25;
+    text-transform: uppercase;
+}
+
+.turbo-toggle-label input {
+    accent-color: var(--accent-primary, #3b82f6);
+}
+
 .jvm-args-btn {
     display: flex;
     align-items: center;
@@ -812,7 +886,13 @@ input[type="range"] { flex: 1; accent-color: var(--accent-primary, #3b82f6); hei
 #settings-panel .settings-card:nth-child(2) { animation: heroIn 0.35s 0.13s ease both; }
 #settings-panel .settings-card:nth-child(3) { animation: heroIn 0.35s 0.18s ease both; }
 #settings-panel .settings-card:nth-child(4) { animation: heroIn 0.35s 0.22s ease both; }
-#settings-panel .play-btn                   { animation: heroIn 0.35s 0.26s ease both; }
+#settings-panel .play-btn                   { animation: heroIn 0.35s 0.26s ease both; margin-bottom: 32px !important; }
+#settings-panel { padding-bottom: 48px !important; }
+
+/* Fix: settings-panel was display:block which breaks flex stretching */
+.settings-panel.active {
+    display: block !important;
+}
 
 /* Mods panel */
 #mods-panel .panel-header  { animation: heroIn 0.35s 0.04s ease both; }

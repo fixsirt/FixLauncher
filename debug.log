@@ -1,0 +1,92 @@
+[2026-02-28T01:36:29.059Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-02-28T01:36:29.108Z][INFO] Creating main window
+[2026-02-28T01:36:29.160Z][INFO] Main window created successfully
+[2026-02-28T01:36:29.186Z][INFO] Discord RPC connected
+[2026-02-28T01:36:30.797Z][INFO] Fetching NEWS.md from GitHub
+[2026-02-28T01:36:31.031Z][INFO] Parsed 2 news items from NEWS.md
+[2026-02-28T01:36:32.164Z][INFO] Checking for updates. Current version: 2.0.5
+[2026-02-28T01:36:32.433Z][INFO] Latest version on GitHub: 2.0.5
+[2026-02-28T01:36:32.434Z][INFO] No updates available.
+[2026-02-28T01:41:29.874Z][INFO] Minecraft launched, PID: 23932
+[2026-02-28T01:41:29.881Z][INFO] Playtime saved: {"totalSeconds":133744,"sessionStart":1772242889879}
+[2026-02-28T01:41:34.954Z][INFO] Playtime saved: {"totalSeconds":133749,"sessionStart":null}
+[2026-02-28T01:41:34.955Z][INFO] Minecraft closed, reopening launcher
+[2026-02-28T01:41:34.956Z][INFO] Showing existing window
+[2026-02-28T01:43:09.633Z][INFO] All windows closed
+[2026-02-28T01:43:09.634Z][INFO] App quitting
+[2026-02-28T01:44:02.617Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-02-28T01:44:02.667Z][INFO] Creating main window
+[2026-02-28T01:44:02.718Z][INFO] Main window created successfully
+[2026-02-28T01:44:02.744Z][INFO] Discord RPC connected
+[2026-02-28T01:44:04.290Z][INFO] Fetching NEWS.md from GitHub
+[2026-02-28T01:44:04.519Z][INFO] Parsed 2 news items from NEWS.md
+[2026-02-28T01:44:05.726Z][INFO] Checking for updates. Current version: 2.0.5
+[2026-02-28T01:44:06.051Z][INFO] Latest version on GitHub: 2.0.5
+[2026-02-28T01:44:06.052Z][INFO] No updates available.
+[2026-02-28T01:46:07.738Z][INFO] Returning cached news
+[2026-02-28T01:46:10.334Z][INFO] Returning cached news
+[2026-02-28T01:46:21.912Z][INFO] Minecraft launched, PID: 23212
+[2026-02-28T01:46:21.915Z][INFO] Playtime saved: {"totalSeconds":133749,"sessionStart":1772243181914}
+[2026-02-28T01:46:26.947Z][INFO] Playtime saved: {"totalSeconds":133754,"sessionStart":null}
+[2026-02-28T01:46:26.948Z][INFO] Minecraft closed, reopening launcher
+[2026-02-28T01:46:26.949Z][INFO] Showing existing window
+[2026-02-28T01:47:14.342Z][INFO] All windows closed
+[2026-02-28T01:47:14.342Z][INFO] App quitting
+[2026-02-28T01:47:30.526Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-02-28T01:47:30.590Z][INFO] Creating main window
+[2026-02-28T01:47:30.650Z][INFO] Main window created successfully
+[2026-02-28T01:47:30.686Z][INFO] Discord RPC connected
+[2026-02-28T01:47:32.297Z][INFO] Fetching NEWS.md from GitHub
+[2026-02-28T01:47:32.433Z][INFO] Parsed 2 news items from NEWS.md
+[2026-02-28T01:47:33.661Z][INFO] Checking for updates. Current version: 2.0.5
+[2026-02-28T01:47:33.956Z][INFO] Latest version on GitHub: 2.0.5
+[2026-02-28T01:47:33.957Z][INFO] No updates available.
+[2026-02-28T01:47:38.119Z][INFO] All windows closed
+[2026-02-28T01:47:38.120Z][INFO] App quitting
+[2026-02-28T01:48:55.170Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-02-28T01:48:55.218Z][INFO] Creating main window
+[2026-02-28T01:48:55.275Z][INFO] Main window created successfully
+[2026-02-28T01:48:55.302Z][INFO] Discord RPC connected
+[2026-02-28T01:48:56.897Z][INFO] Fetching NEWS.md from GitHub
+[2026-02-28T01:48:57.013Z][INFO] Parsed 2 news items from NEWS.md
+[2026-02-28T01:48:58.277Z][INFO] Checking for updates. Current version: 2.0.5
+[2026-02-28T01:48:58.620Z][INFO] Latest version on GitHub: 2.0.5
+[2026-02-28T01:48:58.621Z][INFO] No updates available.
+[2026-02-28T01:49:02.390Z][INFO] Minecraft launched, PID: 21480
+[2026-02-28T01:49:02.395Z][INFO] Playtime saved: {"totalSeconds":133754,"sessionStart":1772243342393}
+[2026-02-28T01:49:07.437Z][INFO] Playtime saved: {"totalSeconds":133759,"sessionStart":null}
+[2026-02-28T01:49:07.438Z][INFO] Minecraft closed, reopening launcher
+[2026-02-28T01:49:07.439Z][INFO] Showing existing window
+[2026-02-28T01:53:47.057Z][INFO] All windows closed
+[2026-02-28T01:53:47.058Z][INFO] App quitting
+[2026-02-28T01:57:20.340Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-02-28T01:57:20.387Z][INFO] Creating main window
+[2026-02-28T01:57:20.445Z][INFO] Main window created successfully
+[2026-02-28T01:57:20.478Z][INFO] Discord RPC connected
+[2026-02-28T01:57:22.058Z][INFO] Fetching NEWS.md from GitHub
+[2026-02-28T01:57:22.288Z][INFO] Parsed 2 news items from NEWS.md
+[2026-02-28T01:57:23.460Z][INFO] Checking for updates. Current version: 2.0.5
+[2026-02-28T01:57:23.752Z][INFO] Latest version on GitHub: 2.0.5
+[2026-02-28T01:57:23.752Z][INFO] No updates available.
+[2026-02-28T01:58:45.062Z][INFO] All windows closed
+[2026-02-28T01:58:45.064Z][INFO] App quitting
+[2026-02-28T02:28:38.854Z][INFO] All windows closed
+[2026-02-28T02:28:38.855Z][INFO] App quitting
+[2026-02-28T02:28:40.769Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-02-28T02:28:40.815Z][INFO] Creating main window
+[2026-02-28T02:28:40.867Z][INFO] Main window created successfully
+[2026-02-28T02:28:40.892Z][INFO] Discord RPC connected
+[2026-02-28T02:28:42.436Z][INFO] Fetching NEWS.md from GitHub
+[2026-02-28T02:28:42.550Z][INFO] Parsed 2 news items from NEWS.md
+[2026-02-28T02:28:43.871Z][INFO] Checking for updates. Current version: 2.0.5
+[2026-02-28T02:28:44.192Z][INFO] Latest version on GitHub: 2.0.5
+[2026-02-28T02:28:44.193Z][INFO] No updates available.
+[2026-02-28T02:29:09.649Z][INFO] Returning cached news
+[2026-02-28T02:29:10.753Z][INFO] Returning cached news
+[2026-02-28T02:29:48.463Z][INFO] Minecraft launched, PID: 3012
+[2026-02-28T02:29:48.467Z][INFO] Playtime saved: {"totalSeconds":133769,"sessionStart":1772245788465}
+[2026-02-28T02:29:53.481Z][INFO] Playtime saved: {"totalSeconds":133774,"sessionStart":null}
+[2026-02-28T02:29:53.482Z][INFO] Minecraft closed, reopening launcher
+[2026-02-28T02:29:53.482Z][INFO] Showing existing window
+[2026-02-28T02:33:49.846Z][INFO] All windows closed
+[2026-02-28T02:33:49.847Z][INFO] App quitting

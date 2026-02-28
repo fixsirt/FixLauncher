@@ -282,9 +282,154 @@ function initSearch (inputId, onSearch) {
     });
 }
 
+/**
+ * Показать диалог с ошибками зависимостей модов
+ * @param {Array} issues - массив объектов из parseDependencyError
+ * @returns {Promise}
+ */
+function showDependencyError (issues) {
+    const overlay = document.getElementById('launcher-modal-overlay');
+    const titleEl = document.getElementById('launcher-modal-title');
+    const messageEl = document.getElementById('launcher-modal-message');
+    const buttonsEl = document.getElementById('launcher-modal-buttons');
+
+    if (!overlay || !messageEl) return Promise.resolve();
+
+    titleEl.textContent = '📦 Отсутствует зависимость мода';
+    messageEl.innerHTML = '';
+
+    const intro = document.createElement('p');
+    intro.textContent = 'Один или несколько модов требуют дополнительные моды, которые не установлены.';
+    intro.style.marginBottom = '10px';
+    messageEl.appendChild(intro);
+
+    const list = document.createElement('ul');
+    list.style.cssText = 'margin: 0 0 12px 0; padding-left: 18px;';
+
+    const seen = new Set();
+    for (const issue of (issues || [])) {
+        const key = issue.key || issue.missingMod;
+        if (seen.has(key)) continue;
+        seen.add(key);
+
+        const li = document.createElement('li');
+        li.style.marginBottom = '4px';
+
+        const missingSpan = document.createElement('strong');
+        missingSpan.textContent = issue.missingMod;
+        missingSpan.style.color = '#e74c3c';
+
+        if (issue.modName) {
+            li.appendChild(document.createTextNode('Мод '));
+            const modSpan = document.createElement('strong');
+            modSpan.textContent = issue.modName;
+            li.appendChild(modSpan);
+            li.appendChild(document.createTextNode(' требует: '));
+        } else {
+            li.appendChild(document.createTextNode('Требуется: '));
+        }
+        li.appendChild(missingSpan);
+        list.appendChild(li);
+    }
+    messageEl.appendChild(list);
+
+    const hint = document.createElement('p');
+    hint.style.cssText = 'font-size: 0.85em; opacity: 0.7; margin: 0;';
+    hint.textContent = 'Найдите недостающий мод в разделе «Ресурсы» → «Поиск модов».';
+    messageEl.appendChild(hint);
+
+    buttonsEl.innerHTML = '';
+    const okBtn = document.createElement('button');
+    okBtn.type = 'button';
+    okBtn.className = 'launcher-modal-btn launcher-modal-btn-primary';
+    okBtn.textContent = 'OK';
+    buttonsEl.appendChild(okBtn);
+
+    overlay.style.display = 'flex';
+    overlay.setAttribute('aria-hidden', 'false');
+
+    return new Promise((resolve) => {
+        okBtn.addEventListener('click', () => {
+            overlay.style.display = 'none';
+            overlay.setAttribute('aria-hidden', 'true');
+            resolve();
+        });
+    });
+}
+
+/**
+ * Показать диалог с конфликтами модов
+ * @param {Array} conflicts - массив объектов из detectModConflicts
+ * @returns {Promise}
+ */
+function showConflictsError (conflicts) {
+    const overlay = document.getElementById('launcher-modal-overlay');
+    const titleEl = document.getElementById('launcher-modal-title');
+    const messageEl = document.getElementById('launcher-modal-message');
+    const buttonsEl = document.getElementById('launcher-modal-buttons');
+
+    if (!overlay || !messageEl) return Promise.resolve();
+
+    titleEl.textContent = '⚠️ Конфликт модов';
+    messageEl.innerHTML = '';
+
+    const intro = document.createElement('p');
+    intro.textContent = 'Обнаружены несовместимые моды. Удалите один из каждой пары:';
+    intro.style.marginBottom = '10px';
+    messageEl.appendChild(intro);
+
+    const list = document.createElement('ul');
+    list.style.cssText = 'margin: 0 0 12px 0; padding-left: 18px;';
+
+    for (const conflict of (conflicts || [])) {
+        const li = document.createElement('li');
+        li.style.marginBottom = '6px';
+
+        const modASpan = document.createElement('strong');
+        modASpan.textContent = conflict.modA || conflict.pair.split(' ↔ ')[0];
+        modASpan.style.color = '#e74c3c';
+
+        const modBSpan = document.createElement('strong');
+        modBSpan.textContent = conflict.modB || conflict.pair.split(' ↔ ')[1];
+        modBSpan.style.color = '#e74c3c';
+
+        li.appendChild(modASpan);
+        li.appendChild(document.createTextNode(' несовместим с '));
+        li.appendChild(modBSpan);
+        list.appendChild(li);
+    }
+    messageEl.appendChild(list);
+
+    const hint = document.createElement('p');
+    hint.style.cssText = 'font-size: 0.85em; opacity: 0.7; margin: 0;';
+    hint.textContent = 'Перейдите в «Ресурсы» → «Мои моды» и удалите один из конфликтующих модов.';
+    messageEl.appendChild(hint);
+
+    buttonsEl.innerHTML = '';
+    const okBtn = document.createElement('button');
+    okBtn.type = 'button';
+    okBtn.className = 'launcher-modal-btn launcher-modal-btn-primary';
+    okBtn.textContent = 'OK';
+    buttonsEl.appendChild(okBtn);
+
+    overlay.style.display = 'flex';
+    overlay.setAttribute('aria-hidden', 'false');
+
+    return new Promise((resolve) => {
+        okBtn.addEventListener('click', () => {
+            overlay.style.display = 'none';
+            overlay.setAttribute('aria-hidden', 'true');
+            resolve();
+        });
+    });
+}
+
+
 module.exports = {
     showModal,
     showConfirm,
+    showDependencyError,
+    showConflictsError,
     showProgress,
     hideProgress,
     updateProgress,

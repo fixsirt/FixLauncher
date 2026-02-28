@@ -2002,6 +2002,85 @@ body.window-maximized .mods-panel.active .mods-download-grid {
     display: block;
 }
 
+.about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.about-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: background 0.2s;
+}
+
+.about-card:hover {
+    background: rgba(255,255,255,0.07);
+}
+
+.about-card-main {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.about-card-icon {
+    font-size: 32px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.about-card-main .about-card-icon {
+    font-size: 32px;
+}
+
+.about-card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+}
+
+.about-card p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.devs-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.dev-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--accent-primary);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+
+.dev-link::before {
+    content: '@';
+    opacity: 0.7;
+}
+
+.dev-link:hover {
+    opacity: 0.8;
+}
+
 .about-content {
     color: var(--text-primary);
 }
@@ -2054,16 +2133,18 @@ body.window-maximized .mods-panel.active .mods-download-grid {
 
 .links-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 10px;
     margin-top: 12px;
 }
 
 .link-btn {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 14px;
     border-radius: 10px;
     border: 1px solid var(--border-color);
     background: var(--bg-glass-light);
@@ -2084,7 +2165,7 @@ body.window-maximized .mods-panel.active .mods-download-grid {
 }
 
 .link-icon {
-    font-size: 18px;
+    font-size: 26px;
 }
 
 /* ─── PROGRESS OVERLAY ─── */

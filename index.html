@@ -49,7 +49,7 @@
             </div>
             <div class="logo-text">
                 <span class="logo-name">FixLauncher</span>
-                <span class="logo-sub">v2.0.5</span>
+                <span class="logo-sub">v2.0.6</span>
             </div>
             <!-- Update badge -->
             <button class="update-badge" id="update-badge" title="Доступно обновление! Нажмите для автоустановки" style="display:none">
@@ -227,7 +227,7 @@
         </div>
 
         <!-- ── SETTINGS PANEL ── -->
-        <div class="panel settings-panel" id="settings-panel" style="display: none;">
+        <div class="panel settings-panel" id="settings-panel" style="display: none; padding-bottom: 48px !important;">
             <div class="panel-header">
                 <h2 class="panel-title">Настройки</h2>
             </div>
@@ -276,12 +276,35 @@
 
                 <div class="settings-card">
                     <div class="settings-card-icon">🩺</div>
-                    <label>Диагностика лаунчера</label>
-                    <div class="path-input-group" style="display:flex; gap:8px;">
-                        <button class="browse-btn" id="run-diagnostics-btn" type="button">Проверить</button>
+                    <label>Диагностика</label>
+                    <div class="path-input-group settings-actions-row">
+                        <button class="browse-btn" id="run-diagnostics-btn" type="button">Проверить лаунчер</button>
                         <button class="browse-btn" id="export-logs-btn" type="button">Экспорт логов</button>
                     </div>
+                    <div class="path-input-group profile-actions-row" style="margin-top:6px;">
+                        <button class="browse-btn" id="quick-fix-btn" type="button">Починить всё</button>
+                        <button class="browse-btn" id="detect-conflicts-btn" type="button">Проверить конфликты модов</button>
+                        <button class="browse-btn" id="analyze-crash-btn" type="button">Разобрать последний краш</button>
+                    </div>
                     <small class="info-text" id="diagnostics-status">Проверка системы и экспорт debug.log</small>
+                </div>
+
+                <div class="settings-card">
+                    <div class="settings-card-icon">🚀</div>
+                    <label>Профили и ускорение</label>
+                    <div class="path-input-group profile-controls-row">
+                        <button class="field-input profile-select" id="game-profile-select-btn" type="button" style="text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+                            <span id="game-profile-label">PvP (сбаланс.)</span>
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style="opacity:0.6;flex-shrink:0"><path d="M2 4l4 4 4-4"/></svg>
+                        </button>
+                        <input type="hidden" id="game-profile-select" value="pvp">
+                        
+                    </div>
+
+                    <label class="turbo-toggle-label">
+                        <input type="checkbox" id="turbo-mode-toggle">
+                        Турбо-запуск (отложенная загрузка тяжёлых панелей)
+                    </label>
                 </div>
             </div>
 
@@ -289,6 +312,7 @@
                 <span class="play-btn-text">Сохранить настройки</span>
                 <span class="play-btn-shine"></span>
             </button>
+            <div style="height: 10px; flex-shrink: 0;"></div>
         </div>
 
         <!-- ── MODS PANEL ── -->
@@ -333,8 +357,7 @@
                             <input type="text" id="mods-search" class="mods-search-input" placeholder="Поиск по установленным модам...">
                         </div>
                     </div>
-                    <div class="mods-warning mods-warning-restart" id="mods-warning-restart" style="display: none;">
-                        Некоторые моды требуют перезапуска игры для применения изменений.
+                    <div class="mods-warning mods-warning-restart" id="mods-warning-restart" style="display: none !important;">
                     </div>
                     <div class="mods-installed-list" id="mods-installed-list">
                         <div class="mods-loading" id="mods-installed-loading">Загрузка списка модов...</div>
@@ -553,6 +576,23 @@
         <div class="launcher-modal-title" id="launcher-modal-title">Сообщение</div>
         <div class="launcher-modal-message" id="launcher-modal-message"></div>
         <div class="launcher-modal-buttons" id="launcher-modal-buttons"></div>
+    </div>
+</div>
+
+<!-- ── PROFILE MODAL ── -->
+<div class="jvm-modal-overlay" id="profile-modal-overlay" style="display: none;">
+    <div class="jvm-modal-panel" role="dialog" aria-modal="true">
+        <div class="jvm-modal-header">
+            <h2 class="jvm-modal-title">🚀 Профили и ускорение</h2>
+            <button type="button" class="jvm-modal-close" id="profile-modal-close">✕</button>
+        </div>
+        <div class="jvm-modal-body">
+            <div id="profile-options-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+        <div class="jvm-modal-footer">
+            <button type="button" class="jvm-modal-btn jvm-modal-btn-cancel" id="profile-modal-cancel">Отмена</button>
+            <button type="button" class="jvm-modal-btn jvm-modal-btn-save" id="profile-modal-save">Применить профиль</button>
+        </div>
     </div>
 </div>
 

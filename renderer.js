@@ -9,6 +9,7 @@ const { addUserJVMArgs } = require('./src/jvm-args');
 const { initServersPanel } = require('./src/servers');
 const { getPlaytimePath } = require('./src/paths');
 const { formatDiagnosticsReport } = require('./src/renderer-support');
+const { getProfilePreset, detectModConflicts, analyzeCrashText } = require('./src/power-tools');
 
 // ─── PLAYTIME DISPLAY (запись — в main.js) ──────────────────────────────────
 function _playtimeFilePath() {
@@ -383,6 +384,12 @@ function showLauncherConfirm(message, title) {
 let tabSwitchTimeout = null;
 let isTabSwitching = false;
 
+// Показывает панель с правильным display (flex для серверов, block для остальных)
+function showPanel(panel) {
+    if (!panel) return;
+    panel.style.display = panel.id === 'servers-panel' ? 'flex' : 'block';
+}
+
 function initTabs() {
     const tabs = document.querySelectorAll('.tab');
     tabs.forEach((tab, index) => {
@@ -476,7 +483,7 @@ function initTabs() {
                         });
 
                         // Показываем целевую панель
-                        targetPanel.style.display = 'block';
+                        showPanel(targetPanel);
                         targetPanel.classList.remove('fade-out');
                         requestAnimationFrame(() => {
                             requestAnimationFrame(() => {
@@ -505,7 +512,7 @@ function initTabs() {
                         }
                     });
 
-                    targetPanel.style.display = 'block';
+                    showPanel(targetPanel);
                     targetPanel.classList.remove('fade-out');
                     requestAnimationFrame(() => {
                         requestAnimationFrame(() => {
@@ -1970,7 +1977,6 @@ function renderInstalledModsList(mods, searchQuery) {
                 } else {
                     setModDisabled(filePath);
                 }
-                document.getElementById('mods-warning-restart').style.display = 'block';
                 refreshInstalledModsList();
             } catch (e) {
                 console.error(e);
@@ -5590,19 +5596,100 @@ function continueMinecraftLaunch(minecraftPath, javaPath, playerName, ram, withM
             const missingDep  = allOutput.match(/requires? (?:mod )?'?([\w-]+)'?[^\n]*/gi);
 
             if (incompatMatch || formattedMatch) {
-                errorMessage = '⚠️ Конфликт модов\n\n';
-                errorMessage += 'Один или несколько модов несовместимы друг с другом или с текущей версией игры.\n\n';
-                if (modConflict && modConflict.length > 0) {
-                    errorMessage += 'Конфликты:\n';
-                    modConflict.slice(0, 4).forEach(m => {
-                        errorMessage += '• ' + m.replace(/\[\d+:\d+:\d+\][^:]*: /g, '').trim().substring(0, 120) + '\n';
-                    });
-                    errorMessage += '\n';
+                // Определяем тип проблемы: отсутствующая зависимость или настоящий конфликт
+                const missingLines = modConflict ? modConflict.filter(m => /missing|отсутствует/i.test(m)) : [];
+                const conflictLines = modConflict ? modConflict.filter(m => /conflicts|incompatible/i.test(m)) : [];
+                const requiresLines = modConflict ? modConflict.filter(m => /requires/i.test(m) && !/conflicts/i.test(m)) : [];
+
+                // Если есть "requires ... which is missing" — это зависимость, а не конфликт
+                const isMissingDep = missingLines.length > 0 || (requiresLines.length > 0 && conflictLines.length === 0);
+
+                if (isMissingDep) {
+                    errorMessage = '📦 Отсутствует зависимость мода\n\n';
+                    errorMessage += 'Один или несколько модов требуют дополнительные моды, которые не установлены.\n\n';
+                    const depLines = [...missingLines, ...requiresLines];
+                    if (depLines.length > 0) {
+                        errorMessage += 'Проблемы:\n';
+                        // Дедупликация по паре (кто требует → что требуется)
+                        const seen = new Set();
+                        depLines.slice(0, 8).forEach(m => {
+                            const clean = m.replace(/\[\d+:\d+:\d+\][^:]*: /g, '').trim();
+                            // Парсим: Mod 'ИМЯ' (id) ... requires ... version of МОД
+                            const matchFull = clean.match(/Mod '([^']+)'\s*\([^)]+\)[^r]*requires[^v]*version of ([a-zA-Z0-9_\-]+)/i);
+                            // Парсим: Mod 'ИМЯ' (id) ... requires mod МОД
+                            const matchMod  = clean.match(/Mod '([^']+)'\s*\([^)]+\)[^r]*requires mod ([a-zA-Z0-9_\-]+)/i);
+                            // Парсим: requires any X.x version of МОД
+                            const matchVer  = clean.match(/requires any ([^\s]+) version of ([a-zA-Z0-9_\-]+)/i);
+
+                            let line;
+                            if (matchFull) {
+                                const requirer = matchFull[1];
+                                const needed   = matchFull[2];
+                                const version  = matchVer ? matchVer[1] : null;
+                                const key = requirer + '→' + needed;
+                                if (seen.has(key)) return;
+                                seen.add(key);
+                                line = `Мод "${requirer}" требует установить "${needed}"` + (version ? ` (версия ${version})` : '');
+                            } else if (matchMod) {
+                                const requirer = matchMod[1];
+                                const needed   = matchMod[2];
+                                const key = requirer + '→' + needed;
+                                if (seen.has(key)) return;
+                                seen.add(key);
+                                line = `Мод "${requirer}" требует установить "${needed}"`;
+                            } else {
+                                // fallback — просто вычленяем название мода после "of" или "mod"
+                                const fallback = clean.match(/(?:version of|requires mod)\s+([a-zA-Z0-9_\-]+)/i);
+                                const needed = fallback ? fallback[1] : clean.substring(0, 80);
+                                if (seen.has(needed)) return;
+                                seen.add(needed);
+                                line = `Требуется установить мод "${needed}"`;
+                            }
+                            errorMessage += '• ' + line + '\n';
+                        });
+                        errorMessage += '\n';
+                    }
+                    errorMessage += 'Что делать:\n';
+                    errorMessage += '1. Установите недостающие моды-зависимости\n';
+                    errorMessage += '2. Найдите мод в разделе «Ресурсы» → «Поиск модов»\n';
+                    errorMessage += '3. Или удалите мод, которому не хватает зависимости';
+                } else {
+                    errorMessage = '⚠️ Конфликт модов\n\n';
+                    errorMessage += 'Два или более мода несовместимы друг с другом.\n\n';
+                    if (conflictLines.length > 0 || (modConflict && modConflict.length > 0)) {
+                        errorMessage += 'Конфликты:\n';
+                        const seen = new Set();
+                        (conflictLines.length > 0 ? conflictLines : modConflict).slice(0, 8).forEach(m => {
+                            const clean = m.replace(/\[\d+:\d+:\d+\][^:]*: /g, '').trim();
+                            // Парсим: Mod 'A' ... conflicts with 'B'
+                            const matchConflict = clean.match(/Mod '([^']+)'[^c]*conflicts with[^']*'([^']+)'/i);
+                            // Парсим: Mod 'A' ... incompatible with 'B'
+                            const matchIncompat = clean.match(/Mod '([^']+)'[^i]*incompatible with[^']*'([^']+)'/i);
+                            let line;
+                            if (matchConflict) {
+                                const key = matchConflict[1] + '↔' + matchConflict[2];
+                                if (seen.has(key)) return;
+                                seen.add(key);
+                                line = `"${matchConflict[1]}" конфликтует с "${matchConflict[2]}"`;
+                            } else if (matchIncompat) {
+                                const key = matchIncompat[1] + '↔' + matchIncompat[2];
+                                if (seen.has(key)) return;
+                                seen.add(key);
+                                line = `"${matchIncompat[1]}" несовместим с "${matchIncompat[2]}"`;
+                            } else {
+                                if (seen.has(clean)) return;
+                                seen.add(clean);
+                                line = clean.substring(0, 100);
+                            }
+                            errorMessage += '• ' + line + '\n';
+                        });
+                        errorMessage += '\n';
+                    }
+                    errorMessage += 'Что делать:\n';
+                    errorMessage += '1. Удалите один из конфликтующих модов\n';
+                    errorMessage += '2. Проверьте совместимость версий модов\n';
+                    errorMessage += '3. Обновите моды до версии игры';
                 }
-                errorMessage += 'Что делать:\n';
-                errorMessage += '1. Удалите недавно установленные моды\n';
-                errorMessage += '2. Проверьте совместимость версий модов\n';
-                errorMessage += '3. Обновите моды до версии игры';
 
             // 2. Нехватка памяти
             } else if (allOutput.includes('OutOfMemoryError') || allOutput.includes('Java heap space')) {
@@ -5623,22 +5710,123 @@ function continueMinecraftLaunch(minecraftPath, javaPath, playerName, ram, withM
                 errorMessage += '3. Переустановите Java';
 
             // 4. Битые/отсутствующие нативные файлы
-            } else if (allOutput.includes('UnsatisfiedLinkError') || allOutput.includes('.dll') || allOutput.includes('.so')) {
-                errorMessage = '📦 Отсутствуют нативные библиотеки\n\n';
-                errorMessage += 'Не найден системный файл (.dll/.so) необходимый для запуска.\n\n';
+            // 4. Битые/отсутствующие нативные файлы (только UnsatisfiedLinkError, без ложных срабатываний на .dll в путях)
+            } else if (allOutput.includes('UnsatisfiedLinkError')) {
+                const dllMatch = allOutput.match(/UnsatisfiedLinkError[^\n]*?([^\s/\\]+\.(?:dll|so|dylib))/i);
+                const missingLib = dllMatch ? dllMatch[1] : null;
+                errorMessage = '📦 Отсутствует нативная библиотека\n\n';
+                if (missingLib) {
+                    errorMessage += `Не найден системный файл: ${missingLib}\n\n`;
+                } else {
+                    errorMessage += 'Не найден системный файл (.dll/.so), необходимый для запуска.\n\n';
+                }
                 errorMessage += 'Что делать:\n';
                 errorMessage += '1. Переустановите версию Minecraft через лаунчер\n';
                 errorMessage += '2. Проверьте антивирус — он мог удалить файлы\n';
                 errorMessage += '3. Запустите лаунчер от имени администратора';
 
-            // 5. Общая ошибка — показываем конкретные строки из лога
+            // 5. NoClassDefFoundError — мод или компонент скомпилирован под другую версию Java
+            } else if (allOutput.includes('NoClassDefFoundError') || allOutput.includes('ClassNotFoundException')) {
+                const classMatch = allOutput.match(/(?:NoClassDefFoundError|ClassNotFoundException)[:\s]+([a-zA-Z0-9$/._-]+)/);
+                const className = classMatch ? classMatch[1].split('/').pop().split('.').pop() : null;
+                errorMessage = '☕ Несовместимая версия Java или мода\n\n';
+                if (className) {
+                    errorMessage += `Не удалось загрузить класс: ${className}\n\n`;
+                } else {
+                    errorMessage += 'Один из модов или компонентов Minecraft скомпилирован под другую версию Java.\n\n';
+                }
+                errorMessage += 'Что делать:\n';
+                errorMessage += '1. Установите Java 21 — она нужна для Minecraft 1.21+\n';
+                errorMessage += '2. Убедитесь, что в настройках лаунчера выбрана правильная Java\n';
+                errorMessage += '3. Проверьте, что все моды совместимы с версией игры\n';
+                errorMessage += '4. Попробуйте удалить последние установленные моды';
+
+            // 6. StackOverflowError — бесконечная рекурсия в моде
+            } else if (allOutput.includes('StackOverflowError')) {
+                // Пытаемся найти имя мода в стектрейсе
+                const stackLines = allOutput.split('\n').filter(l => l.includes('StackOverflowError') || l.includes('\tat '));
+                const modHint = stackLines.slice(1, 6).find(l => {
+                    const ll = l.toLowerCase();
+                    return ll.includes('mod') || ll.includes('fabric') || ll.includes('forge') ||
+                           (!ll.includes('java.') && !ll.includes('javax.') && !ll.includes('sun.') && !ll.includes('net.minecraft'));
+                });
+                const modClass = modHint ? modHint.replace(/\s*at\s+/, '').split('(')[0].trim() : null;
+                errorMessage = '🔁 Ошибка в моде (бесконечный цикл)\n\n';
+                if (modClass) {
+                    errorMessage += `Ошибка обнаружена в: ${modClass}\n\n`;
+                } else {
+                    errorMessage += 'Один из модов вызвал бесконечную рекурсию и Minecraft упал.\n\n';
+                }
+                errorMessage += 'Что делать:\n';
+                errorMessage += '1. Отключайте моды по одному, чтобы найти виновника\n';
+                errorMessage += '2. Обновите все моды до последних версий\n';
+                errorMessage += '3. Проверьте совместимость версий модов друг с другом\n';
+                errorMessage += '4. Сообщите об ошибке автору мода';
+
+            // 7. Нет прав доступа к файлам/папкам
+            } else if (allOutput.includes('AccessDeniedException') || allOutput.includes('Permission denied') || allOutput.includes('Access is denied')) {
+                const pathMatch = allOutput.match(/(?:AccessDeniedException|Permission denied)[:\s]+([^\n\r"]+)/i);
+                const deniedPath = pathMatch ? pathMatch[1].trim().substring(0, 80) : null;
+                errorMessage = '🔒 Нет прав доступа к файлам\n\n';
+                if (deniedPath) {
+                    errorMessage += `Доступ запрещён: ${deniedPath}\n\n`;
+                } else {
+                    errorMessage += 'Minecraft не может читать или записывать файлы — недостаточно прав.\n\n';
+                }
+                errorMessage += 'Что делать:\n';
+                errorMessage += '1. Запустите лаунчер от имени администратора\n';
+                errorMessage += '2. Проверьте, что папка .minecraft не заблокирована антивирусом\n';
+                errorMessage += '3. Откройте свойства папки .minecraft и выдайте полный доступ вашему пользователю\n';
+                errorMessage += '4. Убедитесь, что Minecraft не запущен в другом месте';
+
+            // 8. Forge-специфичные ошибки загрузки модов
+            } else if (allOutput.includes('FMLLoader') || allOutput.includes('ModLoadingException') || allOutput.includes('fml.loading') || allOutput.includes('net.minecraftforge')) {
+                // Пытаемся вытащить имя проблемного мода из Forge-лога
+                const fmlModMatch = allOutput.match(/(?:Mod ID|modid|mod id)[:\s"']+([a-zA-Z0-9_\-]+)/i) ||
+                                    allOutput.match(/Exception caught during firing event[^\n]*?mod[:\s]+([a-zA-Z0-9_\-]+)/i);
+                const forgeMod = fmlModMatch ? fmlModMatch[1] : null;
+                const fmlCause = allOutput.match(/Caused by:[^\n]+/);
+                const causeText = fmlCause ? fmlCause[0].replace('Caused by:', '').trim().substring(0, 100) : null;
+                errorMessage = '⚙️ Ошибка загрузки Forge-мода\n\n';
+                if (forgeMod) {
+                    errorMessage += `Проблема с модом: ${forgeMod}\n`;
+                }
+                if (causeText) {
+                    errorMessage += `Причина: ${causeText}\n`;
+                }
+                errorMessage += '\n';
+                errorMessage += 'Что делать:\n';
+                errorMessage += '1. Проверьте, что все моды предназначены для версии Forge, которую вы используете\n';
+                errorMessage += '2. Убедитесь, что Forge совместим с версией Minecraft\n';
+                errorMessage += '3. Удалите последние добавленные моды и попробуйте снова\n';
+                errorMessage += '4. Обновите Forge до последней рекомендуемой версии';
+
+            // 9. OpenGL / GLFW — проблемы с видеодрайвером или GPU
+            } else if (allOutput.includes('GlfwException') || allOutput.includes('OpenGL') || allOutput.includes('GLFW') ||
+                       allOutput.includes('org.lwjgl') || allOutput.includes('GLXBadFBConfig') || allOutput.includes('WGL_ARB')) {
+                const glMatch = allOutput.match(/(?:GlfwException|GLFW error|OpenGL error)[^\n]*/i);
+                const glDetail = glMatch ? glMatch[0].replace(/\[\d+:\d+:\d+\][^:]*: /g, '').trim().substring(0, 100) : null;
+                errorMessage = '🖥️ Ошибка видеодрайвера (OpenGL/GLFW)\n\n';
+                if (glDetail) {
+                    errorMessage += `Детали: ${glDetail}\n\n`;
+                } else {
+                    errorMessage += 'Minecraft не может инициализировать графику. Проблема с видеодрайвером или GPU.\n\n';
+                }
+                errorMessage += 'Что делать:\n';
+                errorMessage += '1. Обновите драйверы видеокарты (NVIDIA/AMD/Intel) до последней версии\n';
+                errorMessage += '2. Если используете шейдеры — отключите их и попробуйте запустить без них\n';
+                errorMessage += '3. На ноутбуке: убедитесь, что Minecraft использует дискретную видеокарту, а не встроенную\n';
+                errorMessage += '4. Попробуйте добавить в настройки JVM флаг: -Dorg.lwjgl.opengl.Display.allowSoftwareOpenGL=true';
+
+            // 10. Общая ошибка — показываем наиболее информативные строки из лога
             } else {
                 errorMessage = `❌ Minecraft завершился с ошибкой (код ${code})\n\n`;
                 const lines = allOutput.split('\n');
+                // Берём строки с ключевыми словами, фильтруем шум
                 const keyLines = lines.filter(l => {
                     const ll = l.toLowerCase();
                     return (ll.includes('error') || ll.includes('exception') || ll.includes('fatal') || ll.includes('caused by')) &&
-                           !ll.includes('log4j') && l.trim().length > 10;
+                           !ll.includes('log4j') && !ll.includes('warn') && l.trim().length > 10;
                 }).slice(0, 5);
                 if (keyLines.length > 0) {
                     errorMessage += 'Детали из лога:\n';
@@ -6241,6 +6429,208 @@ function splashHide() {
 }
 // ──────────────────────────────────────────────────────────────────────────
 
+function initPowerFeatures () {
+    const profileSelect = document.getElementById('game-profile-select');
+    const applyProfileBtn = document.getElementById('apply-profile-btn');
+    const quickFixBtn = document.getElementById('quick-fix-btn');
+    const detectConflictsBtn = document.getElementById('detect-conflicts-btn');
+    const analyzeCrashBtn = document.getElementById('analyze-crash-btn');
+    const turboToggle = document.getElementById('turbo-mode-toggle');
+
+    if (turboToggle) {
+        turboToggle.checked = localStorage.getItem('launcher-turbo-mode') === '1';
+        turboToggle.addEventListener('change', () => {
+            localStorage.setItem('launcher-turbo-mode', turboToggle.checked ? '1' : '0');
+            showToast(turboToggle.checked ? 'Турбо-режим включён' : 'Турбо-режим выключен', 'info');
+        });
+    }
+
+    // ── Profile modal ──
+    const PROFILES = [
+        { value: 'pvp',    label: 'PvP (сбаланс.)',  desc: 'Оптимальный баланс производительности для PvP' },
+        { value: 'lowend', label: 'Low-end PC',       desc: 'Минимум ресурсов, максимум стабильности' },
+        { value: 'shaders',label: 'Shaders',          desc: 'Настройки для работы с шейдерами' },
+        { value: 'stream', label: 'Stream',           desc: 'Оптимизация для стриминга' },
+    ];
+    let selectedProfileValue = profileSelect ? profileSelect.value : 'pvp';
+
+    const profileModalOverlay = document.getElementById('profile-modal-overlay');
+    const profileModalClose   = document.getElementById('profile-modal-close');
+    const profileModalCancel  = document.getElementById('profile-modal-cancel');
+    const profileModalSave    = document.getElementById('profile-modal-save');
+    const profileOptionsList  = document.getElementById('profile-options-list');
+    const profileSelectBtn    = document.getElementById('game-profile-select-btn');
+    const profileLabel        = document.getElementById('game-profile-label');
+
+    function openProfileModal () {
+        if (!profileModalOverlay) return;
+        selectedProfileValue = profileSelect ? profileSelect.value : 'pvp';
+        if (profileOptionsList) {
+            profileOptionsList.innerHTML = '';
+            PROFILES.forEach(p => {
+                const item = document.createElement('div');
+                item.className = 'jvm-flag-item';
+                item.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;cursor:pointer;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);transition:all 0.2s;';
+                item.innerHTML = `<input type="radio" name="profile-option" value="${p.value}" style="accent-color:var(--accent-primary,#3b82f6);width:16px;height:16px;" ${selectedProfileValue===p.value?'checked':''}><div><div style="font-weight:600;font-size:13px;color:#f1f5f9;">${p.label}</div><div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">${p.desc}</div></div>`;
+                item.addEventListener('click', () => {
+                    item.querySelector('input').checked = true;
+                    selectedProfileValue = p.value;
+                    profileOptionsList.querySelectorAll('.jvm-flag-item').forEach(el => el.style.borderColor = 'rgba(255,255,255,0.08)');
+                    item.style.borderColor = 'var(--accent-primary,#3b82f6)';
+                });
+                if (selectedProfileValue === p.value) item.style.borderColor = 'var(--accent-primary,#3b82f6)';
+                profileOptionsList.appendChild(item);
+            });
+        }
+        profileModalOverlay.style.display = 'flex';
+    }
+
+    function closeProfileModal () {
+        if (profileModalOverlay) profileModalOverlay.style.display = 'none';
+    }
+
+    if (profileSelectBtn) profileSelectBtn.addEventListener('click', openProfileModal);
+    if (profileModalClose) profileModalClose.addEventListener('click', closeProfileModal);
+    if (profileModalCancel) profileModalCancel.addEventListener('click', closeProfileModal);
+    if (profileModalOverlay) profileModalOverlay.addEventListener('click', e => { if (e.target === profileModalOverlay) closeProfileModal(); });
+
+    if (profileModalSave) {
+        profileModalSave.addEventListener('click', () => {
+            const selected = profileOptionsList ? profileOptionsList.querySelector('input[name="profile-option"]:checked') : null;
+            const val = selected ? selected.value : selectedProfileValue;
+            if (profileSelect) profileSelect.value = val;
+            const found = PROFILES.find(p => p.value === val);
+            if (profileLabel && found) profileLabel.textContent = found.label;
+            closeProfileModal();
+            // Apply preset
+            const preset = getProfilePreset(val);
+            if (preset) {
+                localStorage.setItem('minecraft-ram', preset.ram);
+                localStorage.setItem('jvm-selected-flags', JSON.stringify(preset.jvmFlags));
+                const ramSlider = document.getElementById('ram-slider');
+                const ramValue  = document.getElementById('ram-value');
+                if (ramSlider) ramSlider.value = preset.ram;
+                if (ramValue)  ramValue.textContent = preset.ram;
+                showToast(`Профиль «${preset.name}» применён`, 'success');
+            }
+        });
+    }
+
+    if (applyProfileBtn && profileSelect) {
+        applyProfileBtn.addEventListener('click', () => {
+            const preset = getProfilePreset(profileSelect.value);
+            localStorage.setItem('minecraft-ram', preset.ram);
+            localStorage.setItem('jvm-selected-flags', JSON.stringify(preset.jvmFlags));
+            const ramSlider = document.getElementById('ram-slider');
+            const ramValue = document.getElementById('ram-value');
+            if (ramSlider) ramSlider.value = preset.ram;
+            if (ramValue) ramValue.textContent = preset.ram;
+            showLauncherAlert(`Профиль ${preset.name} применён. RAM: ${preset.ram} GB`);
+        });
+    }
+
+    if (quickFixBtn) {
+        quickFixBtn.addEventListener('click', () => {
+            try {
+                const versionId = localStorage.getItem(VERSION_STORAGE_KEY) || DEFAULT_VERSION_ID;
+                const dataPath = getDataPathForVersion(versionId);
+                const dirs = ['mods', 'resourcepacks', 'shaderpacks', 'logs', 'crash-reports'];
+                dirs.forEach((dir) => {
+                    const full = path.join(dataPath, dir);
+                    if (!fs.existsSync(full)) fs.mkdirSync(full, { recursive: true });
+                });
+
+                const modsPath = path.join(dataPath, 'mods');
+                let removed = 0;
+                if (fs.existsSync(modsPath)) {
+                    fs.readdirSync(modsPath).forEach((file) => {
+                        const fp = path.join(modsPath, file);
+                        if (file.endsWith('.jar') && fs.statSync(fp).size === 0) {
+                            fs.unlinkSync(fp);
+                            removed += 1;
+                        }
+                    });
+                }
+
+                showLauncherAlert(
+                    `✅ Быстрая починка завершена!
+
+` +
+                    `🔧 Что было сделано:
+` +
+                    `• Проверены и созданы папки игры (mods, resourcepacks, shaderpacks, logs, crash-reports)
+` +
+                    `• Удалены пустые (повреждённые) .jar файлы из папки модов
+` +
+                    `• Восстановлена структура директорий профиля
+
+` +
+                    `📋 Результат:
+` +
+                    `— Проверено папок: ${dirs.length}
+` +
+                    `— Удалено битых .jar: ${removed}`,
+                    'Починить всё'
+                );
+            } catch (e) {
+                showLauncherAlert('Ошибка быстрой починки: ' + e.message);
+            }
+        });
+    }
+
+    if (detectConflictsBtn) {
+        detectConflictsBtn.addEventListener('click', () => {
+            try {
+                const versionId = localStorage.getItem(VERSION_STORAGE_KEY) || DEFAULT_VERSION_ID;
+                const modsPath = getModsPathForVersion(versionId);
+                if (!fs.existsSync(modsPath)) {
+                    showLauncherAlert('Папка модов не найдена.');
+                    return;
+                }
+                const files = fs.readdirSync(modsPath).filter((f) => f.toLowerCase().endsWith('.jar'));
+                const conflicts = detectModConflicts(files);
+                if (!conflicts.length) {
+                    showLauncherAlert('Явных конфликтов модов не найдено ✅');
+                } else {
+                    const conflictText = conflicts.map(c => `• ${c.message || c.pair}`).join('\n');
+                    showLauncherAlert('Найдены потенциальные конфликты:\n' + conflictText, 'Конфликты модов');
+                }
+            } catch (e) {
+                showLauncherAlert('Ошибка проверки модов: ' + e.message);
+            }
+        });
+    }
+
+    if (analyzeCrashBtn) {
+        analyzeCrashBtn.addEventListener('click', () => {
+            try {
+                const versionId = localStorage.getItem(VERSION_STORAGE_KEY) || DEFAULT_VERSION_ID;
+                const dataPath = getDataPathForVersion(versionId);
+                const crashDir = path.join(dataPath, 'crash-reports');
+                const candidates = [];
+                if (fs.existsSync(crashDir)) {
+                    fs.readdirSync(crashDir)
+                        .filter((f) => f.endsWith('.txt'))
+                        .forEach((f) => candidates.push(path.join(crashDir, f)));
+                }
+                if (!candidates.length) {
+                    showLauncherAlert('Краш-логи не найдены.');
+                    return;
+                }
+                candidates.sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
+                const latest = candidates[0];
+                const text = fs.readFileSync(latest, 'utf8');
+                const message = analyzeCrashText(text);
+                showLauncherAlert(`Файл: ${path.basename(latest)}
+
+${message}`, 'Анализ краша');
+            } catch (e) {
+                showLauncherAlert('Ошибка анализа краша: ' + e.message);
+            }
+        });
+    }
+}
+
 function initSupportTools () {
     const diagnosticsBtn = document.getElementById('run-diagnostics-btn');
     const exportBtn = document.getElementById('export-logs-btn');
@@ -6301,6 +6691,8 @@ async function init() {
         initSaveButton();
         console.log('[INIT] step: supportTools');
         initSupportTools();
+        console.log('[INIT] step: powerFeatures');
+        initPowerFeatures();
         console.log('[INIT] step: links');
         initLinks();
         console.log('[INIT] step: playerName');
@@ -6321,14 +6713,23 @@ async function init() {
         loadSettings();
         await new Promise(r => setTimeout(r, 0));
 
-        splashSet(50, 'Загрузка новостей...');
+        const turboMode = localStorage.getItem('launcher-turbo-mode') === '1';
+        splashSet(50, turboMode ? 'Турбо-режим: минимум блокирующих задач...' : 'Загрузка новостей...');
         console.log('[INIT] step: loadNews (background)');
-        loadNews(); // не блокируем — грузится в фоне
+        if (turboMode) {
+            setTimeout(() => loadNews(), 1200);
+        } else {
+            loadNews();
+        }
         await new Promise(r => setTimeout(r, 0));
 
-        splashSet(75, 'Загрузка модов...');
+        splashSet(75, turboMode ? 'Турбо-режим: отложенная загрузка модов...' : 'Загрузка модов...');
         console.log('[INIT] step: loadModsPanel');
-        loadModsPanel();
+        if (turboMode) {
+            setTimeout(() => loadModsPanel(), 1800);
+        } else {
+            loadModsPanel();
+        }
         await new Promise(r => setTimeout(r, 0));
 
         splashSet(100, 'Готово!');
