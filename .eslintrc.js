@@ -12,7 +12,8 @@ module.exports = {
     },
     rules: {
         'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-        'no-console': 'off',
+        // Пункт 4: 'warn' вместо 'off' — случайные console.log будут заметны
+        'no-console': ['warn', { allow: ['warn', 'error'] }],
         'indent': ['warn', 4],
         'quotes': ['warn', 'single'],
         'semi': ['warn', 'always'],

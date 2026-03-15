@@ -8,28 +8,30 @@ const path = require('path');
 const https = require('https');
 const http = require('http');
 const AdmZip = require('adm-zip');
-const { getVanillaSunsPath } = require('./settings');
+const { getDefaultMinecraftPath } = require('./settings');
 const { getSelectedVersion } = require('./versions');
 
 const MODRINTH_API = 'https://api.modrinth.com/v2';
-const MODRINTH_USER_AGENT = 'VanillaSunsLauncher/1.0';
+const MODRINTH_USER_AGENT = 'FixLauncher/2.0';
 
 /**
  * Получить путь к папке mods для версии
  * @param {string} versionId
  * @returns {string}
  */
-function getModsPathForVersion (versionId) {
-    const basePath = localStorage.getItem('minecraft-path') || getVanillaSunsPath();
+function getModsPathForVersion (versionId, basePath) {
+    // basePath передаётся из renderer через IPC.
+    // Фоллбэк через getVanillaSunsPath() только если basePath не передан.
+    const resolvedBase = basePath || getDefaultMinecraftPath();
     let folderName;
 
-    if (versionId === 'evacuation') {
-        folderName = 'minecraft-survival';
+    if (String(versionId).startsWith('instance:')) {
+        folderName = String(versionId).slice('instance:'.length);
     } else {
         folderName = 'minecraft-' + String(versionId).replace(/:/g, '-').replace(/[^a-zA-Z0-9.-]/g, '-');
     }
 
-    return path.join(basePath, folderName, 'mods');
+    return path.join(resolvedBase, folderName, 'mods');
 }
 
 /**
@@ -109,8 +111,8 @@ function parseModMetadata (jarPath) {
  * @param {string} versionId
  * @returns {Array}
  */
-function getInstalledMods (versionId) {
-    const modsPath = getModsPathForVersion(versionId);
+function getInstalledMods (versionId, basePath) {
+    const modsPath = getModsPathForVersion(versionId, basePath);
     const mods = [];
 
     try {

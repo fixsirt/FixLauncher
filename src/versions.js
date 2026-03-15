@@ -8,19 +8,10 @@ const path = require('path');
 const { getVanillaSunsPath } = require('./settings');
 
 const VERSION_STORAGE_KEY = 'launcher-selected-version';
-const DEFAULT_VERSION_ID = 'evacuation';
+const DEFAULT_VERSION_ID = 'fabric:1.21.4';
 
 /** Кастомная сборка FixLauncher — Выживание */
-const CUSTOM_BUILDS = [
-    {
-        id: 'evacuation',
-        type: 'custom',
-        label: 'VanillaSuns — Выживание',
-        mcVersion: '1.21.4',
-        description: 'Fabric 1.21.4 (кастомная сборка проекта)',
-        icon: '🟢'
-    }
-];
+const CUSTOM_BUILDS = [];
 
 /** Типы версий для группировки в списке */
 const VERSION_TYPE_LABELS = {
@@ -44,9 +35,7 @@ const VERSION_TYPE_LABELS = {
  */
 function getMinecraftProfilePath (versionId) {
     const base = getVanillaSunsPath();
-    const folder = versionId === 'evacuation'
-        ? 'minecraft-survival'
-        : 'minecraft-' + String(versionId).replace(/:/g, '-').replace(/[^a-zA-Z0-9.-]/g, '-');
+    const folder = 'minecraft-' + String(versionId).replace(/:/g, '-').replace(/[^a-zA-Z0-9.-]/g, '-');
     return path.join(base, folder);
 }
 
@@ -57,7 +46,6 @@ function getMinecraftProfilePath (versionId) {
  */
 function getVersionDirNamesForCheck (version) {
     if (!version) return [];
-    if (version.id === 'evacuation') return ['1.21.4', '1.21.4-fabric'];
 
     const mc = version.mcVersion || '';
     if (version.type === 'fabric') return [mc ? mc + '-fabric' : '1.21.4-fabric'];
@@ -96,9 +84,6 @@ function isVersionInstalled (version) {
 function getSelectedVersion () {
     const raw = localStorage.getItem(VERSION_STORAGE_KEY) || DEFAULT_VERSION_ID;
 
-    if (raw === 'evacuation') {
-        return CUSTOM_BUILDS[0];
-    }
 
     const [type, mcVersion] = raw.includes(':') ? raw.split(':') : ['release', raw];
     const label = type === 'fabric' ? `Fabric ${mcVersion}` : mcVersion;
@@ -121,7 +106,14 @@ function getSelectedVersion () {
 function versionHasModLoader (version) {
     if (!version || !version.type) return false;
     const t = version.type.toLowerCase();
-    return t === 'evacuation' || t === 'custom' ||
+    if (t === 'instance') {
+        // Instance has loader from instance.json
+        if (version.loader && version.loader !== 'vanilla') return true;
+        // Fallback: check dir name
+        const dir = version.dir || version.id || '';
+        return /fabric|forge|neoforge|quilt/i.test(dir);
+    }
+    return t === 'custom' ||
            t === 'fabric' || t === 'forge' ||
            t === 'neoforge' || t === 'quilt' || t === 'legacy_forge';
 }

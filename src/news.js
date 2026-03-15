@@ -4,15 +4,28 @@
  */
 
 const https = require('https');
-
-const NEWS_MD_URL = 'https://raw.githubusercontent.com/fixsirt/FixLauncher/main/NEWS.md';
+const { NEWS_MD_URL } = require('./renderer/constants');
 const REQUEST_TIMEOUT = 7000;
 const NEWS_LAST_N_POSTS = 10;
 
-function parseNewsMd (md) {
+/**
+ * Разбивает NEWS.md на отдельные посты.
+ *
+ * Формат файла:
+ *   ## Заголовок (Дата)
+ *   Тело поста...
+ *   ^---$          ← строго: три дефиса на отдельной строке, ничего рядом
+ *   ## Следующий...
+ *
+ * Разделитель ^---$ выбран намеренно: стандартный Markdown HR выглядит как
+ * "---" с пустыми строками вокруг, а мы требуем ровно три дефиса БЕЗ
+ * окружающего пробела — это практически невозможно случайно получить в тексте.
+ */
+/** @param {string} md @returns {{title:string, date:string, body:string}[]} Список постов из NEWS.md */
+function parseNewsMd(md) {
     const blocks = String(md || '')
-        .split(/\n---+\n/)
-        .map((block) => block.trim())
+        .split(/^---$/m)          // строго три дефиса на отдельной строке
+        .map(b => b.trim())
         .filter(Boolean);
 
     return blocks.map((block, index) => {
@@ -20,14 +33,17 @@ function parseNewsMd (md) {
         const first = (lines[0] || '').trim();
         const titleMatch = first.match(/^##\s+(.+?)(?:\s+\((.+?)\))?$/);
 
-        const title = titleMatch ? titleMatch[1].trim() : first.replace(/^#+\s*/, '').trim() || `Новость #${index + 1}`;
-        const date = titleMatch && titleMatch[2] ? titleMatch[2].trim() : '';
+        const title = titleMatch
+            ? titleMatch[1].trim()
+            : first.replace(/^#+\s*/, '').trim() || `Новость #${index + 1}`;
+        const date = titleMatch?.[2]?.trim() ?? '';
         const body = lines.slice(1).join('\n').trim();
 
         return { title, date, body };
     });
 }
 
+/** @param {string} [url] @returns {Promise<string|null>} Сырой текст NEWS.md или null при ошибке */
 function fetchNewsMd (url = NEWS_MD_URL) {
     return new Promise((resolve) => {
         const req = https.get(url, { timeout: REQUEST_TIMEOUT }, (res) => {
@@ -50,6 +66,7 @@ function fetchNewsMd (url = NEWS_MD_URL) {
     });
 }
 
+/** @returns {Promise<{ok:boolean, items:object[], error?:string}>} Новости для рендерера */
 async function getNews () {
     try {
         const md = await fetchNewsMd();

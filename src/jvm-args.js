@@ -1,3 +1,6 @@
+(function() {
+'use strict';
+
 // Добавление пользовательских JVM аргументов
 function addUserJVMArgs(jvmArgs) {
     // 1. Сначала добавляем флаги из нового модального окна
@@ -13,7 +16,8 @@ function addUserJVMArgs(jvmArgs) {
                 'string-dedup': '-XX:+UseStringDeduplication',
                 'tiered': '-XX:+TieredCompilation',
                 'large-pages': '-XX:+UseLargePages',
-                'disable-explicit-gc': '-XX:-DisableExplicitGC',
+                // + включает опцию (запрещает System.gc()), - наоборот разрешал бы — это был баг
+                'disable-explicit-gc': '-XX:+DisableExplicitGC',
                 'compile-threshold': '-XX:CompileThreshold=1000',
                 'inline': '-XX:+AggressiveOpts'
             };
@@ -62,4 +66,8 @@ function addUserJVMArgs(jvmArgs) {
     return jvmArgs;
 }
 
-module.exports = { addUserJVMArgs };
+// Dual export: window.* для renderer, module.exports для Node.js/main
+const _JvmArgs = { addUserJVMArgs };
+if (typeof window !== 'undefined') { window.JvmArgs = _JvmArgs; }
+if (typeof module !== 'undefined' && module.exports) { module.exports = _JvmArgs; }
+})();
