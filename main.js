@@ -1492,9 +1492,25 @@ ipcMain.handle('java:ensure', async (event, { minecraftPath, currentJavaPath }) 
 
     async function installVanillaVersion(event, minecraftPath, version) {
         send(event, 20, 'Загрузка манифеста версий...');
-        const manifest    = await fetchJSON('https://launchermeta.mojang.com/mc/game/version_manifest.json');
-        const versionInfo = manifest.versions.find(v => v.id === version);
+        const manifest = await fetchJSON('https://launchermeta.mojang.com/mc/game/version_manifest.json');
+
+        // Ищем версию — если точного совпадения нет, пробуем убрать последний патч
+        // Например 1.21.11 → 1.21.1, 1.20.10 → 1.20.1
+        let versionInfo = manifest.versions.find(v => v.id === version);
+        let resolvedVersion = version;
+        if (!versionInfo) {
+            // Пробуем сократить: 1.21.11 → 1.21.1, 1.21.10 → 1.21.1
+            const shortened = version.replace(/^(\d+\.\d+)\.(\d{2,})$/, (_, base, patch) => `${base}.${patch[0]}`);
+            if (shortened !== version) {
+                versionInfo = manifest.versions.find(v => v.id === shortened);
+                if (versionInfo) {
+                    resolvedVersion = shortened;
+                    log('WARN', `Version ${version} not found, using ${shortened} instead`);
+                }
+            }
+        }
         if (!versionInfo) throw new Error(`Version ${version} not found in manifest`);
+        version = resolvedVersion;
 
         send(event, 25, 'Загрузка информации о версии...');
         const versionData = await fetchJSON(versionInfo.url);
@@ -1809,10 +1825,23 @@ ipcMain.handle('java:ensure', async (event, { minecraftPath, currentJavaPath }) 
     // ── fabric ────────────────────────────────────────────────────────────────
 
     async function installFabricVersion(event, minecraftPath, version) {
-        const mcVersion = version.replace(/-fabric$/, '') || '1.21.4';
+        const mcVersion = version.replace(/-(fabric|forge|neoforge|quilt).*$/i, '') || '1.21.4';
 
         send(event, 20, 'Установка базовой версии Minecraft...');
-        const versionData = await installVanillaVersion(event, minecraftPath, mcVersion);
+        // Если vanilla уже скачана — не переустанавливаем
+        const vanillaJar = path.join(minecraftPath, 'versions', mcVersion, mcVersion + '.jar');
+        let versionData;
+        if (fs.existsSync(vanillaJar)) {
+            try {
+                versionData = JSON.parse(fs.readFileSync(
+                    path.join(minecraftPath, 'versions', mcVersion, mcVersion + '.json'), 'utf8'
+                ));
+                send(event, 35, 'Базовая версия уже установлена...');
+            } catch { versionData = null; }
+        }
+        if (!versionData) {
+            versionData = await installVanillaVersion(event, minecraftPath, mcVersion);
+        }
 
         send(event, 38, 'Получение версии Fabric Loader...');
         let fabricLoaderVersion = '0.16.0';

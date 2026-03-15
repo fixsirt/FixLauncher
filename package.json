@@ -1,6 +1,6 @@
 {
   "name": "fixlauncher",
-  "version": "2.0.6",
+  "version": "2.0.8",
   "description": "FixLauncher Launcher for Minecraft - Modern, Secure, Updated",
   "main": "main.js",
   "scripts": {
@@ -14,7 +14,10 @@
     "test:coverage": "jest --coverage",
     "build": "electron-builder",
     "build:win": "electron-builder --win --config.forceCodeSigning=false",
-    "pack:win": "node scripts/pack.js"
+    "pack:win": "node scripts/pack.js",
+    "start:silent": "electron . --no-sandbox",
+    "launch": "wscript launch.vbs",
+    "build:installer": "electron-builder --win nsis --config.forceCodeSigning=false"
   },
   "keywords": [
     "minecraft",
@@ -33,9 +36,15 @@
           "arch": [
             "x64"
           ]
+        },
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
         }
       ],
-      "icon": "logo.png",
+      "icon": "logo.ico",
       "requestedExecutionLevel": "asInvoker"
     },
     "portable": {
@@ -67,7 +76,10 @@
       "!**/test/**/*",
       "!**/tests/**/*",
       "!**/*.test.js",
-      "!**/*.spec.js"
+      "!**/*.spec.js",
+      "ui-init.js",
+      "launch.vbs",
+      "launch.bat"
     ],
     "asar": true,
     "compression": "normal",
@@ -79,6 +91,14 @@
       "owner": "fixsirt",
       "repo": "fixlauncher",
       "releaseType": "release"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "FixLauncher",
+      "artifactName": "${productName}-Setup-${version}.${ext}"
     }
   },
   "jest": {
@@ -107,7 +127,15 @@
     },
     "rules": {
       "no-unused-vars": "warn",
-      "no-console": ["warn", { "allow": ["warn", "error"] }]
+      "no-console": [
+        "warn",
+        {
+          "allow": [
+            "warn",
+            "error"
+          ]
+        }
+      ]
     }
   },
   "prettier": {

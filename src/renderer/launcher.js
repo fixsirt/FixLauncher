@@ -205,13 +205,15 @@ function _launchWithMeta(playerName, selectedVersion, versionType, isCustomBuild
         const instanceConfigPath = window.electronAPI.path.join(minecraftPath, 'instance.json');
         if (!await fs.existsSync(instanceConfigPath)) {
             try {
-                const [loaderType, loaderMcVer] = versionType.includes(':') ? versionType.split(':') : ['vanilla', versionType];
+                // Для инстансов берём реальные mcVersion и loader из уже вычисленных переменных
+                const realMcVer  = instanceMcVersion || versionString.replace(/-(fabric|forge|neoforge|quilt).*$/i, '');
+                const realLoader = instanceLoader || (withMods ? 'fabric' : 'vanilla');
                 const instanceMeta = {
-                    mcVersion:     loaderMcVer || versionString,
-                    loader:        loaderType !== 'release' ? loaderType : 'vanilla',
-                    loaderVersion: null,
+                    mcVersion:     realMcVer,
+                    loader:        realLoader,
+                    loaderVersion: instanceLoaderVersion || null,
                     created:       new Date().toISOString(),
-                    name:          null, // будет сгенерировано из имени папки
+                    name:          null,
                 };
                 await window.electronAPI.instances.writeConfig(minecraftPath, instanceMeta);
             } catch(e) { console.warn('[launcher] Could not write instance.json:', e.message); }
@@ -751,7 +753,7 @@ async function continueMinecraftLaunch(minecraftPath, javaPath, playerName, ram,
                 },
                 launcherVersion: { name: 'fixlauncher', format: 21 }
             };
-            await window.electronAPI.fs.writeFileSync(lpPath, JSON.stringify(profileData, null, 2), 'utf8');
+            await window.electronAPI.fs.write(lpPath, JSON.stringify(profileData, null, 2), 'utf8');
             console.log('[launcher] launcher_profiles.json written for offline multiplayer');
         } catch(e) {
             console.warn('[launcher] Could not write launcher_profiles.json:', e.message);
