@@ -63,3 +63,89 @@
 [2026-03-15T16:47:50.092Z][INFO] [screenshots] Found 0 screenshots across 1 root(s)
 [2026-03-15T16:47:52.227Z][INFO] All windows closed
 [2026-03-15T16:47:52.229Z][INFO] App quitting
+[2026-03-17T23:24:25.703Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-03-17T23:24:25.753Z][INFO] Creating main window
+[2026-03-17T23:24:25.808Z][INFO] Main window created successfully
+[2026-03-17T23:24:25.816Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-03-17T23:24:25.832Z][WARN] Discord RPC login failed: Could not connect
+[2026-03-17T23:24:26.178Z][INFO] Fetching NEWS.md from GitHub
+[2026-03-17T23:24:26.212Z][INFO] Checking for updates. Current version: 2.0.8
+[2026-03-17T23:24:26.576Z][INFO] Parsed 2 news items from NEWS.md
+[2026-03-17T23:24:26.688Z][INFO] Latest version on GitHub: 2.0.8
+[2026-03-17T23:24:26.689Z][INFO] No updates available.
+[2026-03-17T23:24:28.809Z][INFO] Checking for updates. Current version: 2.0.8
+[2026-03-17T23:24:28.893Z][INFO] Latest version on GitHub: 2.0.8
+[2026-03-17T23:24:28.894Z][INFO] No updates available.
+[2026-03-17T23:24:35.125Z][INFO] [screenshots] Found 3 screenshots across 1 root(s)
+[2026-03-17T23:24:40.843Z][INFO] Discord RPC reconnect attempt...
+[2026-03-17T23:24:40.849Z][WARN] Discord RPC login failed: Could not connect
+[2026-03-17T23:24:55.852Z][INFO] Discord RPC reconnect attempt...
+[2026-03-17T23:24:55.857Z][WARN] Discord RPC login failed: Could not connect
+[2026-03-17T23:25:10.862Z][INFO] Discord RPC reconnect attempt...
+[2026-03-17T23:25:10.865Z][WARN] Discord RPC login failed: Could not connect
+[2026-03-17T23:25:25.863Z][INFO] Discord RPC reconnect attempt...
+[2026-03-17T23:25:25.867Z][WARN] Discord RPC login failed: Could not connect
+[2026-03-17T23:25:40.875Z][INFO] Discord RPC reconnect attempt...
+[2026-03-17T23:25:40.878Z][WARN] Discord RPC login failed: Could not connect
+[2026-03-17T23:25:47.145Z][INFO] All windows closed
+[2026-03-17T23:25:47.146Z][INFO] App quitting
+[2026-03-17T23:26:25.241Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-03-17T23:26:25.289Z][INFO] Creating main window
+[2026-03-17T23:26:25.343Z][INFO] Main window created successfully
+[2026-03-17T23:26:25.352Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-03-17T23:26:25.369Z][WARN] Discord RPC login failed: Could not connect
+[2026-03-17T23:26:25.750Z][INFO] Fetching NEWS.md from GitHub
+[2026-03-17T23:26:25.884Z][INFO] Parsed 2 news items from NEWS.md
+[2026-03-17T23:26:25.907Z][INFO] Checking for updates. Current version: 2.0.8
+[2026-03-17T23:26:26.555Z][INFO] Latest version on GitHub: 2.0.8
+[2026-03-17T23:26:26.557Z][INFO] No updates available.
+[2026-03-17T23:26:28.354Z][INFO] Checking for updates. Current version: 2.0.8
+[2026-03-17T23:26:28.419Z][INFO] Latest version on GitHub: 2.0.8
+[2026-03-17T23:26:28.421Z][INFO] No updates available.
+[2026-03-17T23:26:40.371Z][INFO] Discord RPC reconnect attempt...
+[2026-03-17T23:26:40.375Z][WARN] Discord RPC login failed: Could not connect
+[2026-03-17T23:26:55.213Z][INFO] [screenshots] Found 3 screenshots across 1 root(s)
+[2026-03-17T23:26:55.372Z][INFO] Discord RPC reconnect attempt...
+[2026-03-17T23:26:55.376Z][WARN] Discord RPC login failed: Could not connect
+[2026-03-17T23:26:58.206Z][INFO] All windows closed
+[2026-03-17T23:26:58.207Z][INFO] App quitting
+[2026-03-17T23:28:09.946Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-03-17T23:28:09.993Z][INFO] Creating main window
+[2026-03-17T23:28:10.037Z][INFO] Main window created successfully
+[2026-03-17T23:28:10.044Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-03-17T23:28:10.060Z][WARN] Discord RPC login failed: Could not connect
+[2026-03-17T23:28:10.391Z][INFO] Fetching NEWS.md from GitHub
+[2026-03-17T23:28:10.409Z][INFO] Checking for updates. Current version: 2.0.8
+[2026-03-17T23:28:10.696Z][INFO] Parsed 2 news items from NEWS.md
+[2026-03-17T23:28:10.896Z][INFO] Latest version on GitHub: 2.0.8
+[2026-03-17T23:28:10.897Z][INFO] No updates available.
+[2026-03-17T23:28:13.041Z][INFO] Checking for updates. Current version: 2.0.8
+[2026-03-17T23:28:13.114Z][INFO] Latest version on GitHub: 2.0.8
+[2026-03-17T23:28:13.115Z][INFO] No updates available.
+[2026-03-17T23:28:25.066Z][INFO] Discord RPC reconnect attempt...
+[2026-03-17T23:28:25.071Z][WARN] Discord RPC login failed: Could not connect
+[2026-03-17T23:28:40.080Z][INFO] Discord RPC reconnect attempt...
+[2026-03-17T23:28:40.086Z][WARN] Discord RPC login failed: Could not connect
+[2026-03-17T23:28:55.090Z][INFO] Discord RPC reconnect attempt...
+[2026-03-17T23:28:55.094Z][WARN] Discord RPC login failed: Could not connect
+[2026-03-17T23:29:08.528Z][INFO] All windows closed
+[2026-03-17T23:29:08.529Z][INFO] App quitting
+[2026-03-17T23:31:48.898Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-03-17T23:31:48.949Z][INFO] Creating main window
+[2026-03-17T23:31:48.994Z][INFO] Main window created successfully
+[2026-03-17T23:31:49.002Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-03-17T23:31:49.020Z][WARN] Discord RPC login failed: Could not connect
+[2026-03-17T23:31:49.412Z][INFO] Fetching NEWS.md from GitHub
+[2026-03-17T23:31:49.549Z][INFO] Checking for updates. Current version: 2.0.9
+[2026-03-17T23:31:49.922Z][INFO] Parsed 2 news items from NEWS.md
+[2026-03-17T23:31:50.065Z][INFO] Latest version on GitHub: 2.0.8
+[2026-03-17T23:31:50.067Z][INFO] No updates available.
+[2026-03-17T23:31:51.998Z][INFO] Checking for updates. Current version: 2.0.9
+[2026-03-17T23:31:52.057Z][INFO] Latest version on GitHub: 2.0.8
+[2026-03-17T23:31:52.057Z][INFO] No updates available.
+[2026-03-17T23:32:04.024Z][INFO] Discord RPC reconnect attempt...
+[2026-03-17T23:32:04.029Z][WARN] Discord RPC login failed: Could not connect
+[2026-03-17T23:32:19.029Z][INFO] Discord RPC reconnect attempt...
+[2026-03-17T23:32:19.032Z][WARN] Discord RPC login failed: Could not connect
+[2026-03-17T23:32:19.302Z][INFO] All windows closed
+[2026-03-17T23:32:19.303Z][INFO] App quitting

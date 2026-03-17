@@ -856,7 +856,35 @@ input[type="password"]:focus {
 }
 
 .settings-panel.active {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    max-height: min(680px, calc(100vh - 120px));
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 6px;
+}
+
+body.window-maximized .settings-panel.active {
+    max-height: calc(100vh - 100px);
+}
+
+/* ─── Скроллбар настроек (в теме акцента) ─── */
+.settings-panel::-webkit-scrollbar {
+    width: 5px;
+}
+.settings-panel::-webkit-scrollbar-track {
+    background: transparent;
+}
+.settings-panel::-webkit-scrollbar-thumb {
+    background: rgba(var(--accent-g, 59,130,246), 0.25);
+    border-radius: 10px;
+    transition: background 0.2s ease;
+}
+.settings-panel:hover::-webkit-scrollbar-thumb {
+    background: rgba(var(--accent-g, 59,130,246), 0.45);
+}
+.settings-panel::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--accent-g, 59,130,246), 0.65);
 }
 
 .path-input-group {

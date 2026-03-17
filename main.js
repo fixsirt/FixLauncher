@@ -2536,6 +2536,7 @@ ipcMain.handle('server:ping', async (_, host, port, timeout) => {
         };
 
         const timer = setTimeout(() => done({ online: false, error: 'timeout' }), timeout);
+        const startTime = Date.now();
 
         socket.connect(port, String(host), () => {
             function varInt(v) {
@@ -2574,6 +2575,7 @@ ipcMain.handle('server:ping', async (_, host, port, timeout) => {
                 clearTimeout(timer);
                 done({
                     online:   true,
+                    latency:  Date.now() - startTime,
                     version:  data.version?.name   || '?',
                     protocol: data.version?.protocol || 0,
                     players:  data.players ? { online: data.players.online, max: data.players.max } : { online: 0, max: 0 },

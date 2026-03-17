@@ -794,31 +794,64 @@ async function installModFromModrinth(projectIdOrSlug, buttonEl, projectType = '
 
         // Шейдеры
         if (projectType === 'shader') {
-            const hasFabric = ['fabric','custom'].includes(version.type);
-            const hasLoader = hasFabric || ['forge','neoforge','legacy_forge'].includes(version.type);
+            // Для инстансов тип 'instance', реальный загрузчик в version.loader
+            const effectiveLoader = (version.type === 'instance' ? (version.loader || '') : version.type).toLowerCase();
+            const hasFabric = ['fabric','custom'].includes(effectiveLoader) || /fabric/i.test(version.dir || version.id || '');
+            const hasForge  = ['forge','legacy_forge'].includes(effectiveLoader) || (!hasFabric && /forge/i.test(version.dir || version.id || ''));
+            const hasNeo    = effectiveLoader === 'neoforge' || (!hasFabric && !hasForge && /neoforge/i.test(version.dir || version.id || ''));
+            const hasLoader = versionHasModLoader(version);
+
+            // Нет модлоадера — блокируем установку и предлагаем выбрать подходящую версию
+            if (!hasLoader) {
+                done();
+                await showLauncherAlert(
+                    'Шейдеры требуют мод-загрузчик (Fabric + Iris или Forge + OptiFine).\n\n' +
+                    'Перейдите на Главную и выберите версию с Fabric или Forge — тогда шейдеры заработают.',
+                    '⚠️ Требуется мод-загрузчик'
+                );
+                return;
+            }
+
             const doInstall = async () => {
                 await window.electronAPI.fs.mkdir(installPath, { recursive: true });
                 await downloadModFile(primaryFile.url, p.join(installPath, primaryFile.filename || p.basename(primaryFile.url) || `shader-${v.id}`), onDlProgress);
                 done(); showLauncherAlert('Шейдеры установлены!');
             };
-            if (!hasLoader) {
-                const yes = await showLauncherConfirm('Шейдеры требуют мод-загрузчик (Iris/OptiFine). Переключиться на Fabric?', '⚠️ Требуется мод-загрузчик');
-                if (yes) { showLauncherAlert('Выберите версию с Fabric в селекторе версий. Установите Iris, затем шейдерпак.'); } else await doInstall();
-                return;
-            }
+
+            // Fabric — проверяем / ставим Iris (с его зависимостями)
             if (hasFabric) {
                 const modsPath = getModsPathForVersion(localStorage.getItem(VERSION_STORAGE_KEY) || DEFAULT_VERSION_ID);
                 let irisInstalled = false;
-                try { if (await window.electronAPI.fs.exists(modsPath)) { const files = await window.electronAPI.fs.readdirNames(modsPath); irisInstalled = files.some(f => f.toLowerCase().includes('iris')); } } catch { /* ignore */ }
+                try {
+                    if (await window.electronAPI.fs.exists(modsPath)) {
+                        const files = await window.electronAPI.fs.readdirNames(modsPath);
+                        irisInstalled = files.some(f => f.toLowerCase().includes('iris'));
+                    }
+                } catch { /* ignore */ }
+
                 if (!irisInstalled) {
-                    const transitiveDeps = await collectAllDepsInfo('iris', gameVersions, ['fabric'], null).catch(() => []);
+                    // Собираем зависимости Iris точно так же, как для модов
+                    const irisDeps = await collectAllDepsInfo('iris', gameVersions, ['fabric'], null).catch(() => []);
                     let msg = 'Для работы шейдеров нужен Iris Shaders.';
-                    if (transitiveDeps.length) msg += '\n\nЗависимости: ' + transitiveDeps.map(d => d.title).join(', ') + '.';
+                    if (irisDeps.length) msg += '\n\nЗависимости: ' + irisDeps.map(d => d.title).join(', ') + '.';
                     msg += '\n\nУстановить Iris вместе с шейдерпаком?';
-                    if (await showLauncherConfirm(msg, '🔵 Зависимость: Iris Shaders'))
+                    if (await showLauncherConfirm(msg, '🔵 Зависимость: Iris Shaders')) {
+                        for (const dep of irisDeps)
+                            await installOneModFromModrinth(dep.project_id, gameVersions, ['fabric'], modsPath).catch(err => console.warn('Iris dep install failed:', dep.project_id, err));
                         await installOneModFromModrinth('iris', gameVersions, ['fabric'], modsPath).catch(() => {});
+                    }
                 }
             }
+
+            // Forge / NeoForge — напоминаем про OptiFine (не автоустанавливаем, т.к. это внешний сайт)
+            if ((hasForge || hasNeo) && !hasFabric) {
+                await showLauncherAlert(
+                    'Для шейдеров на Forge/NeoForge требуется OptiFine или Oculus.\n' +
+                    'Установите его вручную, затем поместите шейдерпак в папку shaderpacks.',
+                    'ℹ️ Требуется OptiFine / Oculus'
+                );
+            }
+
             await doInstall(); return;
         }
 

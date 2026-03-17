@@ -1,6 +1,6 @@
 {
   "name": "fixlauncher",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "description": "FixLauncher Launcher for Minecraft - Modern, Secure, Updated",
   "main": "main.js",
   "scripts": {
@@ -36,16 +36,11 @@
           "arch": [
             "x64"
           ]
-        },
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
         }
       ],
       "icon": "logo.ico",
-      "requestedExecutionLevel": "asInvoker"
+      "requestedExecutionLevel": "asInvoker",
+      "sign": null
     },
     "portable": {
       "artifactName": "${productName}-Portable.${ext}"
