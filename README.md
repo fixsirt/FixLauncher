@@ -19,25 +19,25 @@ FixLauncher — это программа для запуска Minecraft на W
 ## 📸 Скриншоты
 
 **Главный экран — тема зелёная**
-![Главный экран (зелёная тема)](README\screenshot_main_green.png)
+![Главный экран (зелёная тема)](README/screenshot_main_green.png)
 
 **Главный экран — тема синяя**
-![Главный экран (синяя тема)](screenshot_main_blue.png)
+![Главный экран (синяя тема)](README/screenshot_main_blue.png)
 
 **Главный экран — тема оранжевая**
-![Главный экран (оранжевая тема)](screenshot_main_orange.png)
+![Главный экран (оранжевая тема)](README/screenshot_main_orange.png)
 
 **Менеджер модов**
-![Менеджер модов](screenshot_mods.png)
+![Менеджер модов](README/screenshot_mods.png)
 
 **Настройки**
-![Настройки](screenshot_settings.png)
+![Настройки](README/screenshot_settings.png)
 
 **Создание инстанса**
-![Создание инстанса](screenshot_instance.png)
+![Создание инстанса](README/screenshot_instance.png)
 
 **Галерея скриншотов**
-![Галерея скриншотов](screenshot_screenshots.png)
+![Галерея скриншотов](README/screenshot_screenshots.png)
 
 ---
 
