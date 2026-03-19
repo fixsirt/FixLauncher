@@ -1,7 +1,7 @@
 # 🚀 FixLauncher — лаунчер для Minecraft
 
 > **Запускай Minecraft легко, красиво и бесплатно — без регистрации и лишних заморочек!**
-
+## ⬇️ [Скачать FixLauncher (последняя версия)](https://github.com/fixsirt/FixLauncher/releases/latest)
 [![Скачать](https://img.shields.io/badge/📥_Скачать-Releases-brightgreen?style=for-the-badge)](https://github.com/fixsirt/FixLauncher/releases)
 [![Telegram](https://img.shields.io/badge/💬_Telegram-Канал-blue?style=for-the-badge)](https://t.me/RodFix)
 [![Донат](https://img.shields.io/badge/❤️_Поддержать-DonationAlerts-orange?style=for-the-badge)](https://www.donationalerts.com/r/fixsirt)
