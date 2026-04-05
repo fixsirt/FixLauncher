@@ -44,11 +44,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // ── Minecraft ─────────────────────────────────────────────────────────────
     mcLaunched: (pid) => ipcRenderer.invoke('mc-launched', pid),
 
-    // ── Discord RPC ───────────────────────────────────────────────────────────
-    discordSetPlaying: (playerName, version) =>
-        ipcRenderer.invoke('discord-set-playing', { playerName, version }),
-    discordSetIdle: () => ipcRenderer.invoke('discord-set-idle'),
-
     // ── Обновления ────────────────────────────────────────────────────────────
     checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
     downloadUpdate:  () => ipcRenderer.invoke('download-update'),

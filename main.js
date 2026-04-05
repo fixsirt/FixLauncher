@@ -4,121 +4,6 @@ const https = require("https");
 const http  = require("http");
 const fs = require("fs");
 
-// ========== Discord Rich Presence ==========
-let discordRpcClient = null;
-let discordConnected = false;
-let discordStartTimestamp = null;
-let discordReconnectTimer = null;
-let discordCurrentActivity = null;
-let DiscordRPCLib = null;
-
-function initDiscordRPC() {
-    try {
-        DiscordRPCLib = require('discord-rpc');
-        discordConnect();
-    } catch(e) {
-        log("WARN", "discord-rpc module not available: " + e.message);
-    }
-}
-
-function discordConnect() {
-    if (!DiscordRPCLib) return;
-    const clientId = '1475132415373742140';
-    try {
-        if (discordRpcClient) {
-            try { discordRpcClient.destroy(); } catch(e) {}
-            discordRpcClient = null;
-        }
-        const client = new DiscordRPCLib.Client({ transport: 'ipc' });
-        discordRpcClient = client;
-
-        client.on('ready', () => {
-            discordConnected = true;
-            if (discordReconnectTimer) {
-                clearInterval(discordReconnectTimer);
-                discordReconnectTimer = null;
-            }
-            log("INFO", "Discord RPC connected");
-            // Восстанавливаем статус после реконнекта
-            if (discordCurrentActivity) {
-                applyDiscordActivity(discordCurrentActivity);
-            } else {
-                setDiscordActivity({ playing: false });
-            }
-        });
-
-        client.on('disconnected', () => {
-            discordConnected = false;
-            log("WARN", "Discord RPC disconnected, scheduling reconnect...");
-            discordScheduleReconnect();
-        });
-
-        client.login({ clientId }).catch(e => {
-            discordConnected = false;
-            log("WARN", "Discord RPC login failed: " + e.message);
-            discordScheduleReconnect();
-        });
-    } catch(e) {
-        log("WARN", "Discord connect() error: " + e.message);
-        discordScheduleReconnect();
-    }
-}
-
-function discordScheduleReconnect() {
-    if (discordReconnectTimer) return;
-    discordReconnectTimer = setInterval(() => {
-        log("INFO", "Discord RPC reconnect attempt...");
-        discordConnect();
-    }, 15000);
-}
-
-function applyDiscordActivity(activity) {
-    if (!discordRpcClient || !discordConnected) return;
-    try {
-        discordRpcClient.setActivity(activity);
-    } catch(e) {
-        log("WARN", "Discord setActivity error: " + e.message);
-    }
-}
-
-function setDiscordActivity({ playing, playerName, version }) {
-    const now = Date.now();
-    if (playing && !discordStartTimestamp) discordStartTimestamp = now;
-    if (!playing) discordStartTimestamp = null;
-
-    const activity = {
-        largeImageKey: 'fixlauncher_logo', // загрузи logo.png в Discord Dev Portal → Rich Presence → Art Assets с ключом fixlauncher_logo
-        largeImageText: 'FixLauncher',
-        instance: false,
-    };
-
-    if (playing && playerName && version) {
-        activity.details = `Играет: ${playerName}`;
-        activity.state = `Сборка: ${version}`;
-        activity.smallImageKey = 'fixlauncher_logo';
-        activity.smallImageText = 'В игре';
-        activity.startTimestamp = discordStartTimestamp;
-        activity.buttons = [
-            { label: '⬇️ Скачать FixLauncher', url: 'https://t.me/rodfix_perehod' }
-        ];
-    } else {
-        activity.details = 'FixLauncher';
-        activity.state = 'Выбор сборки';
-        activity.buttons = [
-            { label: '⬇️ Скачать FixLauncher', url: 'https://t.me/rodfix_perehod' }
-        ];
-    }
-
-    discordCurrentActivity = activity;
-    applyDiscordActivity(activity);
-}
-
-function clearDiscordActivity() {
-    discordCurrentActivity = null;
-    discordStartTimestamp = null;
-    if (!discordRpcClient || !discordConnected) return;
-    try { discordRpcClient.clearActivity(); } catch(e) {}
-}
 
 // ========== Константы ==========
 const NEWS_LAST_N_POSTS = 10;
@@ -351,8 +236,6 @@ function startMcWatch(pid) {
                 d.sessionStart = null;
                 writePlaytime(d);
             }
-            // Discord — возвращаемся в лаунчер
-            setDiscordActivity({ playing: false });
             // Открываем лаунчер снова
             log("INFO", "Minecraft closed, reopening launcher");
             createWindow();
@@ -728,14 +611,6 @@ ipcMain.on("maximize-window", () => {
 ipcMain.handle("mc-launched", (event, pid) => {
     log("INFO", "Minecraft launched, PID: " + pid);
     startMcWatch(pid);
-});
-
-// Discord RPC — статус в меню / запуск
-ipcMain.handle("discord-set-playing", (event, { playerName, version }) => {
-    setDiscordActivity({ playing: true, playerName, version });
-});
-ipcMain.handle("discord-set-idle", () => {
-    setDiscordActivity({ playing: false });
 });
 
 // Открытие ссылки в браузере (для шаринга)
@@ -2974,11 +2849,13 @@ function startYggdrasilServer() {
 
 ipcMain.handle('yggdrasil:port', () => yggdrasilPort);
 
+// ========== Оптимизация памяти ==========
+app.commandLine.appendSwitch('js-flags', '--max-old-space-size=200 --expose-gc');
+
 app.whenReady().then(() => {
     log("INFO", "App ready [PLAYTIME-BUILD v3]");
     startYggdrasilServer();
     initPlaytimeOnStart();
-    initDiscordRPC();
     registerSafePermissionHandler();
     createWindow();
     // Проверяем обновления через 3 сек после запуска (чтобы окно успело загрузиться)
@@ -3011,4 +2888,8 @@ app.on("activate", () => {
 
 app.on("quit", () => {
     log("INFO", "App quitting");
+});
+
+app.on("browser-window-blur", () => {
+    if (global.gc) global.gc();
 });

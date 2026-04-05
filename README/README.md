@@ -1,7 +1,7 @@
 # 🚀 FixLauncher — лаунчер для Minecraft
 
 > **Запускай Minecraft легко, красиво и бесплатно — без регистрации и лишних заморочек!**
-## ⬇️ [Скачать FixLauncher (последняя версия)](https://github.com/fixsirt/FixLauncher/releases/latest)
+
 [![Скачать](https://img.shields.io/badge/📥_Скачать-Releases-brightgreen?style=for-the-badge)](https://github.com/fixsirt/FixLauncher/releases)
 [![Telegram](https://img.shields.io/badge/💬_Telegram-Канал-blue?style=for-the-badge)](https://t.me/RodFix)
 [![Донат](https://img.shields.io/badge/❤️_Поддержать-DonationAlerts-orange?style=for-the-badge)](https://www.donationalerts.com/r/fixsirt)
@@ -19,25 +19,25 @@ FixLauncher — это программа для запуска Minecraft на W
 ## 📸 Скриншоты
 
 **Главный экран — тема зелёная**
-![Главный экран (зелёная тема)](README/screenshot_main_green.png)
+![Главный экран (зелёная тема)](screenshot_main_green.png)
 
 **Главный экран — тема синяя**
-![Главный экран (синяя тема)](README/screenshot_main_blue.png)
+![Главный экран (синяя тема)](screenshot_main_blue.png)
 
 **Главный экран — тема оранжевая**
-![Главный экран (оранжевая тема)](README/screenshot_main_orange.png)
+![Главный экран (оранжевая тема)](screenshot_main_orange.png)
 
 **Менеджер модов**
-![Менеджер модов](README/screenshot_mods.png)
+![Менеджер модов](screenshot_mods.png)
 
 **Настройки**
-![Настройки](README/screenshot_settings.png)
+![Настройки](screenshot_settings.png)
 
 **Создание инстанса**
-![Создание инстанса](README/screenshot_instance.png)
+![Создание инстанса](screenshot_instance.png)
 
 **Галерея скриншотов**
-![Галерея скриншотов](README/screenshot_screenshots.png)
+![Галерея скриншотов](screenshot_screenshots.png)
 
 ---
 

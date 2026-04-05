@@ -782,14 +782,6 @@ async function continueMinecraftLaunch(minecraftPath, javaPath, playerName, ram,
         console.log('[launcher] mc:spawn OK, PID:', spawnResult.pid);
         hideProgress();
 
-        // Discord RPC
-        try {
-            const _pn = document.getElementById('player-name')?.value || 'Player';
-            const _sv = getSelectedVersion();
-            const _vl = _sv?.label || _sv?.id || 'Minecraft';
-            window.electronAPI.discordSetPlaying(_pn, _vl).catch(() => {});
-        } catch { /* ignore */ }
-
         const unsubscribeExitError = window.electronAPI.on.mcProcessExitError(async ({ code, errorOutput }) => {
             unsubscribeExitError();
             console.warn('[launcher] Minecraft exited with code:', code);

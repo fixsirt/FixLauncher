@@ -149,3 +149,18 @@
 [2026-03-17T23:32:19.032Z][WARN] Discord RPC login failed: Could not connect
 [2026-03-17T23:32:19.302Z][INFO] All windows closed
 [2026-03-17T23:32:19.303Z][INFO] App quitting
+[2026-04-05T21:56:35.204Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-04-05T21:56:35.220Z][INFO] Creating main window
+[2026-04-05T21:56:35.287Z][INFO] Main window created successfully
+[2026-04-05T21:56:35.298Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-04-05T21:56:35.730Z][INFO] Fetching NEWS.md from GitHub
+[2026-04-05T21:56:35.903Z][INFO] Checking for updates. Current version: 2.0.9
+[2026-04-05T21:56:36.191Z][INFO] Parsed 2 news items from NEWS.md
+[2026-04-05T21:56:36.487Z][INFO] Latest version on GitHub: 2.0.9
+[2026-04-05T21:56:36.487Z][INFO] No updates available.
+[2026-04-05T21:56:38.300Z][INFO] Checking for updates. Current version: 2.0.9
+[2026-04-05T21:56:38.356Z][INFO] Latest version on GitHub: 2.0.9
+[2026-04-05T21:56:38.357Z][INFO] No updates available.
+[2026-04-05T21:56:49.278Z][INFO] [screenshots] Found 4 screenshots across 1 root(s)
+[2026-04-05T21:58:38.083Z][INFO] All windows closed
+[2026-04-05T21:58:38.084Z][INFO] App quitting
