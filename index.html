@@ -90,7 +90,7 @@
             </div>
             <div class="logo-text">
                 <span class="logo-name">FixLauncher</span>
-                <span class="logo-sub">v2.1.0</span>
+                <span class="logo-sub">v2.1.1</span>
                 <!-- Update badge -->
                 <button class="update-badge" id="update-badge" title="Доступно обновление! Нажмите для автоустановки" style="display:none">
                     <svg class="update-badge-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -356,6 +356,25 @@
                         <button class="browse-btn" id="analyze-crash-btn" type="button">Разобрать последний краш</button>
                     </div>
                     <small class="info-text" id="diagnostics-status">Проверка системы и экспорт debug.log</small>
+                </div>
+
+                <div class="settings-card" id="proxy-settings-card">
+                    <div class="settings-card-icon">🌐</div>
+                    <label>Прокси-сервер</label>
+
+                    <div class="path-input-group" style="margin-bottom:6px;">
+                        <button class="browse-btn" id="proxy-auto-btn" type="button">🔍 Найти лучший прокси</button>
+                        <button class="browse-btn" id="proxy-disable-btn" type="button" style="display:none;">Отключить</button>
+                    </div>
+
+                    <!-- прогресс-бар -->
+                    <div id="proxy-progress-wrap" style="display:none; margin-bottom:4px;">
+                        <div style="background:rgba(255,255,255,0.1); border-radius:4px; height:6px; overflow:hidden;">
+                            <div id="proxy-progress-bar" style="height:100%; width:0%; background:var(--accent,#4caf50); transition:width 0.3s;"></div>
+                        </div>
+                    </div>
+
+                    <small class="info-text" id="proxy-status">Автоматически найдёт и применит самый быстрый прокси</small>
                 </div>
 
                 <div class="settings-card">

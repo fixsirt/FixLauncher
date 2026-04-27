@@ -21,24 +21,25 @@ const { SERVERS_JSON_URL } = window.RendererConstants;
 // ─── Fetch рекламных серверов (fetch вместо require('https')) ─────────────────
 
 async function fetchAdServers() {
-    // 1. Локальный файл через IPC
-    try {
-        const local = await window.electronAPI.servers.loadLocalServers();
-        if (Array.isArray(local) && local.length > 0) return local;
-    } catch { /* fallback to network */ }
-
-    // 2. GitHub fallback через fetch()
+    // 1. GitHub (актуальный список)
     try {
         const ctrl = new AbortController();
         const tid  = setTimeout(() => ctrl.abort(), 8000);
         const res  = await fetch(SERVERS_JSON_URL, { signal: ctrl.signal });
         clearTimeout(tid);
-        if (!res.ok) return [];
-        const parsed = await res.json();
-        return Array.isArray(parsed) && parsed.length > 0 ? parsed : [];
-    } catch {
-        return [];
-    }
+        if (res.ok) {
+            const parsed = await res.json();
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+    } catch { /* fallback to local */ }
+
+    // 2. Локальный файл (офлайн fallback)
+    try {
+        const local = await window.electronAPI.servers.loadLocalServers();
+        if (Array.isArray(local) && local.length > 0) return local;
+    } catch { /* empty */ }
+
+    return [];
 }
 
 // ─── Директория Minecraft ─────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 {
   "name": "fixlauncher",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "FixLauncher Launcher for Minecraft - Modern, Secure, Updated",
   "main": "main.js",
   "scripts": {
@@ -60,10 +60,18 @@
       "bg_ORANGE.jpg",
       "bg_PINK.jpg",
       "package.json",
+      "servers.json",
       "src/**/*.js",
       "!node_modules/**/*",
       "node_modules/adm-zip/**/*",
       "node_modules/electron-updater/**/*",
+      "node_modules/http-proxy-agent/**/*",
+      "node_modules/https-proxy-agent/**/*",
+      "node_modules/socks-proxy-agent/**/*",
+      "node_modules/agent-base/**/*",
+      "node_modules/debug/**/*",
+      "node_modules/ms/**/*",
+      "node_modules/@tootallnate/**/*",
       "!**/*.md",
       "!**/*.txt",
       "!**/*.map",
@@ -149,6 +157,9 @@
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
-    "electron-updater": "^6.8.3"
+    "electron-updater": "^6.8.3",
+    "http-proxy-agent": "^7.0.0",
+    "https-proxy-agent": "^9.0.0",
+    "socks-proxy-agent": "^10.0.0"
   }
 }

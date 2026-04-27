@@ -63,7 +63,7 @@ const STORAGE_KEYS = {
 
 // ─── Прочее ───────────────────────────────────────────────────────────────────
 
-const DEFAULT_VERSION_ID      = '';
+const DEFAULT_VERSION_ID      = 'fabric:1.21.4';
 const ZIP_TIMEOUT_MS          = 300_000;
 const SIZE_CACHE_TTL_MS       = 30_000;
 const WATCHER_DEBOUNCE_MS     = 400;

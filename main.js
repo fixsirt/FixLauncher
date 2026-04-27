@@ -1183,16 +1183,25 @@ async function _javaDownloadAndInstall(event, minecraftPath) {
     await new Promise((resolve, reject) => {
         const file = require('fs').createWriteStream(javaZipPath);
         let downloaded = 0;
-        https.get(downloadUrl, res => {
-            res.on('data', chunk => {
-                downloaded += chunk.length;
-                file.write(chunk);
-                send(15 + Math.floor((downloaded / size) * 60),
-                    `Загрузка Java: ${Math.floor(downloaded / 1048576)}MB / ${Math.floor(size / 1048576)}MB`);
-            });
-            res.on('end', () => { file.end(); resolve(); });
-            res.on('error', reject);
-        }).on('error', reject);
+        const doGet = (u) => {
+            https.get(u, { headers: { 'User-Agent': 'FixLauncher/1.0' } }, res => {
+                if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                    return doGet(res.headers.location);
+                }
+                if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode}: ${u}`));
+                res.on('data', chunk => {
+                    downloaded += chunk.length;
+                    file.write(chunk);
+                    send(15 + Math.floor((downloaded / size) * 60),
+                        `Загрузка Java: ${Math.floor(downloaded / 1048576)}MB / ${Math.floor(size / 1048576)}MB`);
+                });
+                res.on('end', () => { file.end(); });
+                res.on('error', reject);
+            }).on('error', reject);
+        };
+        file.on('finish', resolve);
+        file.on('error', reject);
+        doGet(downloadUrl);
     });
 
     send(75, 'Распаковка Java 21...');
@@ -1281,20 +1290,23 @@ ipcMain.handle('java:ensure', async (event, { minecraftPath, currentJavaPath }) 
 
     function downloadFile(url, dest, onProgress) {
         return new Promise((resolve, reject) => {
+            fs.mkdirSync(path.dirname(dest), { recursive: true });
+            const file = fs.createWriteStream(dest);
             const doGet = (u) => {
-                https.get(u, { headers: { 'User-Agent': 'FixLauncher/1.0' } }, res => {
+                const lib = u.startsWith('https') ? https : http;
+                lib.get(u, { headers: { 'User-Agent': 'FixLauncher/1.0' } }, res => {
                     if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location)
                         return doGet(res.headers.location);
-                    if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode}: ${u}`));
+                    if (res.statusCode !== 200) { file.close(); fs.unlinkSync(dest); return reject(new Error(`HTTP ${res.statusCode}: ${u}`)); }
                     const total = parseInt(res.headers['content-length'] || '0');
                     let downloaded = 0;
-                    fs.mkdirSync(path.dirname(dest), { recursive: true });
-                    const file = fs.createWriteStream(dest);
                     res.on('data', chunk => { downloaded += chunk.length; file.write(chunk); onProgress && onProgress(downloaded, total); });
-                    res.on('end', () => { file.end(); resolve(); });
-                    res.on('error', reject);
-                }).on('error', reject);
+                    res.on('end', () => { file.end(); });
+                    res.on('error', (e) => { file.close(); try { fs.unlinkSync(dest); } catch {} reject(e); });
+                }).on('error', (e) => { file.close(); try { fs.unlinkSync(dest); } catch {} reject(e); });
             };
+            file.on('finish', resolve);
+            file.on('error', (e) => { try { fs.unlinkSync(dest); } catch {} reject(e); });
             doGet(url);
         });
     }
@@ -1502,11 +1514,40 @@ ipcMain.handle('java:ensure', async (event, { minecraftPath, currentJavaPath }) 
         }
     }
 
+    // Резолвит assetIndex из version.json, поднимаясь по inheritsFrom при необходимости
+    function resolveAssetIndex(versionData) {
+        if (!versionData) return null;
+        if (versionData.assetIndex) {
+            if (typeof versionData.assetIndex === 'string') {
+                return { id: versionData.assetIndex, url: null, sha1: null };
+            }
+            return {
+                id: versionData.assetIndex.id,
+                url: versionData.assetIndex.url,
+                sha1: versionData.assetIndex.sha1
+            };
+        }
+        if (versionData.inheritsFrom) {
+            const parentJsonPath = path.join(minecraftPath, 'versions', versionData.inheritsFrom, versionData.inheritsFrom + '.json');
+            if (fs.existsSync(parentJsonPath)) {
+                try {
+                    const parentData = JSON.parse(fs.readFileSync(parentJsonPath, 'utf8'));
+                    return resolveAssetIndex(parentData);
+                } catch (e) { log('WARN', 'resolveAssetIndex: failed to read parent', e.message); }
+            }
+        }
+        return null;
+    }
+
     async function downloadAssets(event, minecraftPath, versionData) {
-        if (!versionData?.assetIndex) return;
-        const assetIndex = versionData.assetIndex.id || versionData.assetIndex;
-        const assetIndexUrl = versionData.assetIndex.url ||
-            `https://piston-meta.mojang.com/v1/packages/${versionData.assetIndex.sha1}/${assetIndex}.json`;
+        const ai = resolveAssetIndex(versionData);
+        if (!ai || !ai.id) {
+            log('WARN', 'downloadAssets: no assetIndex found for version', versionData?.id);
+            return;
+        }
+        const assetIndex = ai.id;
+        const assetIndexUrl = ai.url ||
+            `https://piston-meta.mojang.com/v1/packages/${ai.sha1 || 'unknown'}/${assetIndex}.json`;
         const assetsPath  = path.join(minecraftPath, 'assets');
         const indexesPath = path.join(assetsPath, 'indexes');
         const objectsPath = path.join(assetsPath, 'objects');
@@ -1514,23 +1555,28 @@ ipcMain.handle('java:ensure', async (event, { minecraftPath, currentJavaPath }) 
         fs.mkdirSync(objectsPath, { recursive: true });
         const assetIndexPath = path.join(indexesPath, assetIndex + '.json');
 
-        let objects;
-        if (fs.existsSync(assetIndexPath)) {
-            try { objects = JSON.parse(fs.readFileSync(assetIndexPath, 'utf8')).objects || {}; } catch { objects = {}; }
+        send(event, 60, 'Получение списка ресурсов...');
+        const data = await fetchJSON(assetIndexUrl).catch(() => null);
+        if (!data) {
+            log('WARN', 'downloadAssets: failed to fetch asset index from', assetIndexUrl);
+            return;
         }
-        if (!objects) {
-            const data = await fetchJSON(assetIndexUrl).catch(() => null);
-            if (!data) return;
-            fs.writeFileSync(assetIndexPath, JSON.stringify(data, null, 2));
-            objects = data.objects || {};
-        }
+        fs.writeFileSync(assetIndexPath, JSON.stringify(data, null, 2));
+        const objects = data.objects || {};
         const keys = Object.keys(objects);
+        if (keys.length === 0) {
+            log('WARN', 'downloadAssets: asset index contains 0 objects');
+            return;
+        }
+
         let downloaded = 0;
+        let missing = 0;
         for (let i = 0; i < keys.length; i++) {
             const { hash } = objects[keys[i]];
             const prefix = hash.substring(0, 2);
             const dest   = path.join(objectsPath, prefix, hash);
             if (!fs.existsSync(dest)) {
+                missing++;
                 fs.mkdirSync(path.dirname(dest), { recursive: true });
                 await downloadFile(`https://resources.download.minecraft.net/${prefix}/${hash}`, dest).catch(() => {});
                 if (i % 50 === 0) await new Promise(r => setTimeout(r, 5));
@@ -1539,6 +1585,7 @@ ipcMain.handle('java:ensure', async (event, { minecraftPath, currentJavaPath }) 
             if (downloaded % 100 === 0 || i === keys.length - 1)
                 send(event, 62 + Math.floor((downloaded / keys.length) * 7), `Ресурсы: ${downloaded}/${keys.length}`);
         }
+        log('INFO', `downloadAssets: ${keys.length} total, ${missing} downloaded`);
         send(event, 69, 'Ресурсы загружены!');
     }
 
@@ -1703,20 +1750,10 @@ ipcMain.handle('java:ensure', async (event, { minecraftPath, currentJavaPath }) 
         const mcVersion = version.replace(/-(fabric|forge|neoforge|quilt).*$/i, '') || '1.21.4';
 
         send(event, 20, 'Установка базовой версии Minecraft...');
-        // Если vanilla уже скачана — не переустанавливаем
-        const vanillaJar = path.join(minecraftPath, 'versions', mcVersion, mcVersion + '.jar');
-        let versionData;
-        if (fs.existsSync(vanillaJar)) {
-            try {
-                versionData = JSON.parse(fs.readFileSync(
-                    path.join(minecraftPath, 'versions', mcVersion, mcVersion + '.json'), 'utf8'
-                ));
-                send(event, 35, 'Базовая версия уже установлена...');
-            } catch { versionData = null; }
-        }
-        if (!versionData) {
-            versionData = await installVanillaVersion(event, minecraftPath, mcVersion);
-        }
+        // Всегда запускаем installVanillaVersion — он идемпотентен (пропускает существующие файлы).
+        // Это гарантирует, что все библиотеки (включая joptsimple) точно скачаны,
+        // даже если предыдущая установка оборвалась на полпути.
+        const versionData = await installVanillaVersion(event, minecraftPath, mcVersion);
 
         send(event, 38, 'Получение версии Fabric Loader...');
         let fabricLoaderVersion = '0.16.0';
@@ -1754,17 +1791,31 @@ ipcMain.handle('java:ensure', async (event, { minecraftPath, currentJavaPath }) 
 
         if (!fs.existsSync(path.join(minecraftPath, 'versions', version))) {
             if (code === 0) {
-                // Create version folder manually
                 const fabricVersionPath = path.join(minecraftPath, 'versions', version);
                 fs.mkdirSync(fabricVersionPath, { recursive: true });
-                const baseJson = JSON.parse(JSON.stringify(versionData));
-                baseJson.id = version;
-                baseJson.mainClass = 'net.fabricmc.loader.impl.launch.knot.KnotClient';
-                baseJson.libraries = baseJson.libraries || [];
-                baseJson.libraries.push({ name: `net.fabricmc:fabric-loader:${fabricLoaderVersion}`,
-                    downloads: { artifact: { path: `net/fabricmc/fabric-loader/${fabricLoaderVersion}/fabric-loader-${fabricLoaderVersion}.jar`,
-                        url: `https://maven.fabricmc.net/net/fabricmc/fabric-loader/${fabricLoaderVersion}/fabric-loader-${fabricLoaderVersion}.jar`, sha1: '', size: 0 }}});
-                fs.writeFileSync(path.join(fabricVersionPath, version + '.json'), JSON.stringify(baseJson, null, 2));
+
+                const fabricJson = {
+                    id: version,
+                    inheritsFrom: mcVersion,
+                    type: 'release',
+                    mainClass: 'net.fabricmc.loader.impl.launch.knot.KnotClient',
+                    libraries: [
+                        { name: `net.fabricmc:fabric-loader:${fabricLoaderVersion}`,
+                          downloads: { artifact: {
+                              path: `net/fabricmc/fabric-loader/${fabricLoaderVersion}/fabric-loader-${fabricLoaderVersion}.jar`,
+                              url: `https://maven.fabricmc.net/net/fabricmc/fabric-loader/${fabricLoaderVersion}/fabric-loader-${fabricLoaderVersion}.jar`,
+                              sha1: '', size: 0 } } },
+                        { name: `net.fabricmc:intermediary:${mcVersion}`,
+                          downloads: { artifact: {
+                              path: `net/fabricmc/intermediary/${mcVersion}/intermediary-${mcVersion}.jar`,
+                              url: `https://maven.fabricmc.net/net/fabricmc/intermediary/${mcVersion}/intermediary-${mcVersion}.jar`,
+                              sha1: '', size: 0 } } },
+                    ],
+                    releaseTime: new Date().toISOString(),
+                    time: new Date().toISOString(),
+                };
+                fs.writeFileSync(path.join(fabricVersionPath, version + '.json'), JSON.stringify(fabricJson, null, 2));
+
                 const baseJar = path.join(minecraftPath, 'versions', mcVersion, mcVersion + '.jar');
                 if (fs.existsSync(baseJar)) fs.copyFileSync(baseJar, path.join(fabricVersionPath, version + '.jar'));
 
@@ -1772,6 +1823,11 @@ ipcMain.handle('java:ensure', async (event, { minecraftPath, currentJavaPath }) 
                 fs.mkdirSync(libsPath, { recursive: true });
                 await downloadFile(`https://maven.fabricmc.net/net/fabricmc/fabric-loader/${fabricLoaderVersion}/fabric-loader-${fabricLoaderVersion}.jar`,
                     path.join(libsPath, `fabric-loader-${fabricLoaderVersion}.jar`));
+
+                const intermediaryPath = path.join(minecraftPath, 'libraries', 'net', 'fabricmc', 'intermediary', mcVersion);
+                fs.mkdirSync(intermediaryPath, { recursive: true });
+                await downloadFile(`https://maven.fabricmc.net/net/fabricmc/intermediary/${mcVersion}/intermediary-${mcVersion}.jar`,
+                    path.join(intermediaryPath, `intermediary-${mcVersion}.jar`)).catch(e => log('WARN', 'Intermediary:', e.message));
             } else {
                 throw new Error(`Fabric installer failed (code ${code}).\n${stderr}`);
             }
@@ -1877,10 +1933,9 @@ ipcMain.handle('java:ensure', async (event, { minecraftPath, currentJavaPath }) 
                 send(event, 30, 'Версия уже установлена, проверка ресурсов...');
                 try {
                     const versionData = JSON.parse(fs.readFileSync(versionJsonPath, 'utf8'));
-                    const assetIndex  = versionData.assetIndex?.id || versionData.assetIndex;
-                    const assetsIdxPath = path.join(minecraftPath, 'assets', 'indexes', (assetIndex || '1.21') + '.json');
-                    if (!fs.existsSync(assetsIdxPath) && versionData.assetIndex) {
-                        send(event, 40, 'Загрузка ресурсов...');
+                    // Всегда проверяем/докачиваем ресурсы — даже если индекс существует
+                    if (versionData.assetIndex) {
+                        send(event, 40, 'Проверка ресурсов...');
                         await downloadAssets(event, minecraftPath, versionData);
                     }
                     const lwjglDll = path.join(minecraftPath, 'natives', 'lwjgl.dll');
@@ -2848,6 +2903,287 @@ function startYggdrasilServer() {
 }
 
 ipcMain.handle('yggdrasil:port', () => yggdrasilPort);
+
+// ========== Прокси ==========
+// Загрузка списка бесплатных прокси с GitHub (proxifly/free-proxy-list)
+// ========== ПРОКСИ: стриминг + параллельная проверка ==========
+// proxy:scan — единый хендлер: качает JSON стримом и одновременно проверяет
+// прокси по мере их парсинга. Не ждём окончания загрузки перед проверкой.
+
+ipcMain.handle('proxy:scan', (event) => {
+    return new Promise((resolve) => {
+        const net   = require('net');
+        const http  = require('http');
+        const https = require('https');
+
+        const PROXY_URL   = 'https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/all/data.json';
+        const TCP_TIMEOUT = 3500;
+        const HTTP_TIMEOUT= 8000;
+        const CONCURRENCY = 30;   // одновременных проверок
+        const NEED        = 7;    // найти хотя бы столько рабочих
+        const MAX_MS      = 1000; // прокси медленнее 1000ms не берём
+
+        const TEST_URLS = [
+            'http://detectportal.firefox.com/success.txt',
+            'http://www.gstatic.com/generate_204',
+            'http://connectivitycheck.gstatic.com/generate_204',
+            'http://cp.cloudflare.com/',
+        ];
+
+        const results  = [];
+        let   running  = 0;
+        let   total    = 0;
+        let   checked  = 0;
+        let   done     = false;   // загрузка завершена
+        let   stopped  = false;   // нашли достаточно
+        const queue    = [];      // прокси ждут проверки
+
+        const send = (extra) => {
+            try { event.sender.send('proxy:scan-progress', { checked, total, working: results.length, ...extra }); }
+            catch { /* окно закрыто */ }
+        };
+
+        let finished = false;
+        function finish() {
+            if (finished) return;
+            finished = true;
+            if (watchdog) clearTimeout(watchdog);
+            results.sort((a, b) => a.ms - b.ms);
+            log('INFO', `proxy:scan done — working: ${results.length}${results[0] ? ', best: ' + results[0].ms + 'ms' : ''}`);
+            resolve(results);
+        }
+
+        // Watchdog: если через 3с после нахождения NEED прокси finish так и не вызвался — принудительно завершаем
+        let watchdog = null;
+
+        function tryFinish() {
+            if (finished) return;
+            // Когда stopped — queue не разбирается, её размер не важен
+            if (running === 0 && (done || stopped)) {
+                finish();
+                return;
+            }
+            // Если нашли достаточно и ещё не завершили — ставим watchdog
+            if (stopped && !watchdog) {
+                watchdog = setTimeout(() => {
+                    log('INFO', `proxy:scan watchdog fired, running=${running}`);
+                    finish();
+                }, 3000);
+            }
+        }
+
+        function tcpCheck(p) {
+            return new Promise((res) => {
+                const host = p.ip || p.host;
+                const port = parseInt(p.port, 10);
+                if (!host || !port) return res(null);
+                const s = net.createConnection({ host, port });
+                s.setTimeout(TCP_TIMEOUT);
+                s.on('connect', () => { s.destroy(); res(p); });
+                s.on('timeout', () => { s.destroy(); res(null); });
+                s.on('error',   () => res(null));
+            });
+        }
+
+        function httpCheck(p) {
+            return new Promise((res) => {
+                const proto    = (p.protocol || 'http').toLowerCase();
+                const host     = p.ip || p.host;
+                const port     = parseInt(p.port, 10);
+                // Используем готовый URL из поля proxy если есть, иначе собираем сами
+                const proxyUrl = p.proxy || `${proto}://${host}:${port}`;
+                let agent;
+                try {
+                    const { HttpProxyAgent } = require('http-proxy-agent');
+                    agent = new HttpProxyAgent(proxyUrl);
+                } catch { return res(null); }
+
+                const transport = http;
+                const URLS = TEST_URLS;
+
+                const t0 = Date.now();
+                let idx = 0;
+                function next() {
+                    if (idx >= URLS.length) return res(null);
+                    const url = URLS[idx++];
+                    let finished = false;
+                    const req = transport.get(url, {
+                        agent, timeout: HTTP_TIMEOUT,
+                        headers: { 'User-Agent': 'FixLauncher/1.0' },
+                        rejectUnauthorized: false
+                    }, (r) => {
+                        if (finished) return;
+                        finished = true;
+                        r.resume();
+                        const ms = Date.now() - t0;
+                        if (r.statusCode >= 200 && r.statusCode < 400) {
+                            if (ms <= MAX_MS) {
+                                res({ proxy: { host, port, protocol: proto }, ms });
+                            } else {
+                                res(null); // слишком медленный
+                            }
+                        } else { next(); }
+                    });
+                    req.on('timeout', () => { if (!finished) { finished = true; req.destroy(); next(); } });
+                    req.on('error',   () => { if (!finished) { finished = true; next(); } });
+                }
+                next();
+            });
+        }
+
+        async function checkOne(p) {
+            running++;
+            try {
+                const alive = await tcpCheck(p);
+                checked++;
+                if (!alive) { send(); return; }
+                const result = await httpCheck(p);
+                if (result) {
+                    results.push(result);
+                    send({ found: result });
+                    if (results.length >= NEED) stopped = true;
+                } else {
+                    send();
+                }
+            } finally {
+                // Сначала берём следующий из очереди — ДО running--
+                // чтобы running никогда не падал до 0 пока есть работа
+                if (!stopped && queue.length > 0) {
+                    const next = queue.shift();
+                    running--; // уменьшаем только после того как взяли следующего
+                    checkOne(next);
+                } else {
+                    running--;
+                    tryFinish();
+                }
+            }
+        }
+
+        function enqueue(p) {
+            if (stopped) return;
+            // Пропускаем socks — используем только http/https прокси
+            const proto = (p.protocol || 'http').toLowerCase();
+            if (proto === 'socks5' || proto === 'socks4' || proto === 'socks4a') return;
+            total++;
+            if (running < CONCURRENCY) {
+                checkOne(p);
+            } else {
+                queue.push(p);
+            }
+        }
+
+        // Стриминг JSON: качаем и парсим на лету
+        // proxifly отдаёт JSON-массив [...], парсим по объектам через простой стейт-машин
+        const req = https.get(PROXY_URL, { headers: { 'User-Agent': 'FixLauncher/1.0' }, timeout: 15000 }, (res) => {
+            if (res.statusCode !== 200) {
+                log('ERROR', `proxy:scan HTTP ${res.statusCode}`);
+                resolve([]);
+                return;
+            }
+
+            let buf = '';
+            let depth = 0;
+            let inStr = false;
+            let escape = false;
+            let objStart = -1;
+
+            res.on('data', (chunk) => {
+                if (stopped) { done = true; res.destroy(); tryFinish(); return; }
+                buf += chunk.toString();
+
+                // Простой char-by-char парсер для извлечения JSON-объектов из массива
+                let i = (objStart === -1) ? 0 : buf.length - chunk.length;
+                while (i < buf.length) {
+                    const c = buf[i];
+                    if (escape) { escape = false; i++; continue; }
+                    if (inStr) {
+                        if (c === '\\') escape = true;
+                        else if (c === '"') inStr = false;
+                        i++; continue;
+                    }
+                    if (c === '"') { inStr = true; i++; continue; }
+                    if (c === '{') {
+                        if (depth === 0) objStart = i;
+                        depth++;
+                    } else if (c === '}') {
+                        depth--;
+                        if (depth === 0 && objStart !== -1) {
+                            const objStr = buf.slice(objStart, i + 1);
+                            objStart = -1;
+                            try {
+                                const p = JSON.parse(objStr);
+                                if (p.ip || p.host) enqueue(p);
+                            } catch { /* пропускаем битый объект */ }
+                            // Обрезаем буфер чтобы не копить память
+                            buf = buf.slice(i + 1);
+                            i = -1;
+                        }
+                    }
+                    i++;
+                }
+            });
+
+            res.on('end', () => {
+                done = true;
+                log('INFO', `proxy:scan stream ended, total enqueued: ${total}`);
+                tryFinish();
+            });
+
+            res.on('close', () => {
+                if (!done) { done = true; tryFinish(); }
+            });
+
+            res.on('error', (e) => {
+                if (!done) {
+                    log('ERROR', `proxy:scan stream error: ${e.message}`);
+                    done = true;
+                    tryFinish();
+                }
+            });
+        });
+
+        req.on('timeout', () => { req.destroy(); done = true; tryFinish(); });
+        req.on('error', (e) => { log('ERROR', `proxy:scan request error: ${e.message}`); resolve([]); });
+    });
+});
+
+// Старые хендлеры оставляем для совместимости (proxy:fetch-list используется только в старом коде)
+ipcMain.handle('proxy:fetch-list', async () => {
+    const url = 'https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/all/data.json';
+    try {
+        const raw = await fetchUrl(url);
+        if (!raw) return { error: 'Не удалось загрузить список прокси' };
+        return { proxies: JSON.parse(raw) };
+    } catch (e) {
+        return { error: e.message };
+    }
+});
+
+ipcMain.handle('proxy:find-best', async () => { return []; }); // заглушка, используем proxy:scan
+
+/**
+ * Применить прокси глобально.
+ * - process.env HTTP_PROXY/HTTPS_PROXY — подхватывается дочерними процессами
+ * - activeProxy — используется fetchUrlViaProxy (ниже) для внутренних запросов main
+ */
+let activeProxy = null;
+ipcMain.handle('proxy:set', (_, proxy) => {
+    activeProxy = proxy; // { host, port, protocol } или null
+    if (proxy) {
+        const proxyUrl = `${proxy.protocol || 'http'}://${proxy.host}:${proxy.port}`;
+        process.env.HTTP_PROXY  = proxyUrl;
+        process.env.HTTPS_PROXY = proxyUrl;
+        // Для Java (Minecraft): передаётся через env при spawn — подхватывается автоматически
+        log('INFO', `Прокси установлен: ${proxyUrl}`);
+    } else {
+        delete process.env.HTTP_PROXY;
+        delete process.env.HTTPS_PROXY;
+        log('INFO', 'Прокси отключён');
+    }
+    return { ok: true };
+});
+
+ipcMain.handle('proxy:get', () => activeProxy);
 
 // ========== Оптимизация памяти ==========
 app.commandLine.appendSwitch('js-flags', '--max-old-space-size=200 --expose-gc');

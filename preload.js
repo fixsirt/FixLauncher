@@ -208,6 +208,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
 
     // ────────────────────────────────────────────────────────────────────────
+    // PROXY — управление бесплатными прокси
+    // ────────────────────────────────────────────────────────────────────────
+    proxy: {
+        scan:        ()                      => ipcRenderer.invoke('proxy:scan'),
+        test:        (host, port, protocol)  => ipcRenderer.invoke('proxy:test', host, port, protocol),
+        set:         (proxy)                 => ipcRenderer.invoke('proxy:set', proxy),
+        get:         ()                      => ipcRenderer.invoke('proxy:get'),
+        onProgress:  (cb) => {
+            ipcRenderer.on('proxy:scan-progress', (_, data) => cb(data));
+            return () => ipcRenderer.removeAllListeners('proxy:scan-progress');
+        },
+    },
+
+    // ────────────────────────────────────────────────────────────────────────
     // PATH — синхронные утилиты (чистые функции, нет IPC, нет require в renderer)
     // ────────────────────────────────────────────────────────────────────────
     path: {

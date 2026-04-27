@@ -64,7 +64,7 @@ const {
 const { loadNews, initNewsLinks, initNewsScrollbar } = window.RendererNews;
 const {
     loadSettings, findJavaPath, initBrowseButton, initRamSlider, initSaveButton, initLinks,
-    getVanillaSunsPath, saveCredentials, loadCredentials, initPlayerName
+    getVanillaSunsPath, saveCredentials, loadCredentials, initPlayerName, initProxy
 } = window.SettingsPanel;
 const {
     VERSION_STORAGE_KEY, DEFAULT_VERSION_ID,
@@ -796,6 +796,7 @@ async function init() {
         initJvmModal();
         initScreenshots();
         initInstances();
+        initProxy();
         loadSettings();
 
         // ── Шаг 2: Все вкладки грузятся ПАРАЛЛЕЛЬНО пока показывается сплеш ─

@@ -152,7 +152,8 @@ function _launchWithMeta(playerName, selectedVersion, versionType, isCustomBuild
     if (isInstance) {
         minecraftFolderName = selectedVersion.dir;
     } else {
-        minecraftFolderName = 'minecraft-' + String(versionType).replace(/:/g, '-').replace(/[^a-zA-Z0-9.-]/g, '-');
+        const safeVersionType = String(versionType || 'fabric-1.21.4').replace(/:/g, '-').replace(/[^a-zA-Z0-9.-]/g, '-');
+        minecraftFolderName = 'minecraft-' + safeVersionType;
     }
 
     const minecraftPath = path.join(baseMinecraftPath, minecraftFolderName);
@@ -455,6 +456,34 @@ async function continueMinecraftLaunch(minecraftPath, javaPath, playerName, ram,
 
         console.log('Classpath:', classpath);
 
+        // СТРАХОВКА: если запускаем Fabric и joptsimple отсутствует — vanilla библиотеки не скачаны.
+        // Принудительно переустанавливаем vanilla версию и пересобираем classpath.
+        if (withMods) {
+            const hasJoptSimple = classpath.toLowerCase().includes('jopt-simple');
+            if (!hasJoptSimple) {
+                console.error('FATAL: joptsimple missing from classpath! Vanilla libraries incomplete.');
+                updateProgress(28, 'Доустановка библиотек Minecraft...');
+                const mcVersion = version.replace(/-(fabric|forge|neoforge|quilt|loader).*$/i, '');
+                try {
+                    await window.electronAPI.installer.checkAndDownload(minecraftPath, mcVersion, false);
+                    // Пересобираем classpath после доустановки
+                    const newClasspath = await getMinecraftClasspath(minecraftPath, withMods, version);
+                    if (newClasspath && newClasspath.toLowerCase().includes('jopt-simple')) {
+                        console.log('Classpath rebuilt successfully with vanilla libs.');
+                        classpath = newClasspath;
+                    } else {
+                        throw new Error('joptsimple still missing after reinstall');
+                    }
+                } catch (reinstallErr) {
+                    console.error('Failed to reinstall vanilla libs:', reinstallErr);
+                    hideProgress();
+                    resetPlayButton();
+                    showLauncherAlert('Ошибка: Не удалось доустановить библиотеки Minecraft.\n\nУдалите папку версии и попробуйте снова.\n(' + reinstallErr.message + ')');
+                    return;
+                }
+            }
+        }
+
         let mainClass = 'net.minecraft.client.main.Main';
         if (withMods) {
             mainClass = 'net.fabricmc.loader.impl.launch.knot.KnotClient';
@@ -464,31 +493,42 @@ async function continueMinecraftLaunch(minecraftPath, javaPath, playerName, ram,
             await fs.mkdirSync(nativesPath, { recursive: true });
         }
 
-        // FIX: await при чтении version.json
-        let assetIndex = '1.21';
-        let versionJsonGameArgs = []; // аргументы игры из version.json (с подстановкой переменных)
+        // Резолвим assetIndex с подъёмом по inheritsFrom
+        async function resolveAssetIndex(jsonPath) {
+            if (!(await fs.existsSync(jsonPath))) return null;
+            try {
+                const content = await fs.readFileSync(jsonPath, 'utf8');
+                const data = JSON.parse(content);
+                if (data.assetIndex) {
+                    const id = typeof data.assetIndex === 'string' ? data.assetIndex : data.assetIndex.id;
+                    if (id) return id;
+                }
+                if (data.inheritsFrom) {
+                    const parentPath = path.join(minecraftPath, 'versions', data.inheritsFrom, data.inheritsFrom + '.json');
+                    return await resolveAssetIndex(parentPath);
+                }
+                return null;
+            } catch { return null; }
+        }
+
+        let assetIndex = await resolveAssetIndex(versionJsonPath) || '1.21';
+        console.log('Using assetIndex:', assetIndex);
+
+        let versionJsonGameArgs = [];
         try {
             if (await fs.existsSync(versionJsonPath)) {
                 const versionFileContent = await fs.readFileSync(versionJsonPath, 'utf8');
                 const versionData = JSON.parse(versionFileContent);
-                if (versionData.assetIndex && versionData.assetIndex.id) {
-                    assetIndex = versionData.assetIndex.id;
-                    console.log('Using assetIndex from version.json:', assetIndex);
-                }
-                // Читаем game arguments из version.json для подстановки auth-переменных
-                // Это критично для Minecraft 1.13+ где аргументы идут из version.json
                 const rawArgs = versionData.minecraftArguments
                     ? versionData.minecraftArguments.split(' ')
                     : (versionData.arguments && Array.isArray(versionData.arguments.game))
                         ? versionData.arguments.game.filter(a => typeof a === 'string')
                         : [];
                 console.log('[launcher] version.json game args count:', rawArgs.length);
-                // Сохраняем для последующей подстановки (не используем напрямую,
-                // т.к. наш лаунчер добавляет их сам ниже)
                 versionJsonGameArgs = rawArgs;
             }
         } catch (e) {
-            console.warn('Could not read assetIndex from version.json, using default:', e);
+            console.warn('Could not read game args from version.json:', e);
         }
 
         // FIX: await при проверке lwjgl.dll
@@ -830,133 +870,121 @@ async function getMinecraftClasspath(minecraftPath, withMods, versionOverride = 
     const libsPath = path.join(minecraftPath, 'libraries');
 
     let classpath = [];
+    const seenLibs = new Set();
 
-    if (await fs.existsSync(versionJsonPath)) {
-        try {
-            // FIX: await при чтении version.json
-            const versionFileContent = await fs.readFileSync(versionJsonPath, 'utf8');
-            const versionData = JSON.parse(versionFileContent);
-
-            if (versionData.libraries) {
-                // Mojang version.json uses 'windows'/'osx'/'linux', NOT 'win32'/'darwin'
-                const platformRaw = os.platform();
-                const osName = platformRaw === 'win32' ? 'windows' : platformRaw === 'darwin' ? 'osx' : 'linux';
-                for (const lib of versionData.libraries) {
-                    let shouldInclude = true;
-                    if (lib.rules && lib.rules.length > 0) {
-                        shouldInclude = false;
-                        for (const rule of lib.rules) {
-                            if (rule.action === 'allow') {
-                                if (!rule.os || rule.os.name === osName) { shouldInclude = true; break; }
-                            } else if (rule.action === 'disallow') {
-                                if (rule.os && rule.os.name === osName) { shouldInclude = false; break; }
-                            }
-                        }
-                    }
-
-                    if (shouldInclude && lib.downloads?.artifact?.path) {
-                        const libPath = path.join(libsPath, lib.downloads.artifact.path);
-                        // FIX: await при проверке существования библиотеки
-                        if (await fs.existsSync(libPath)) {
-                            classpath.push(libPath);
-                        } else {
-                            console.warn('Library not found:', libPath, 'for library:', lib.name);
-                        }
-                    } else if (shouldInclude && !lib.downloads?.artifact && lib.name) {
-                        // Старый формат (до 1.19): нет downloads.artifact — вычисляем Maven путь из имени
-                        const parts = lib.name.split(':');
-                        if (parts.length >= 3) {
-                            const [group, artifact, ver] = parts;
-                            const groupPath = group.replace(/\./g, '/');
-                            const fileName = `${artifact}-${ver}.jar`;
-                            const mavenRelPath = `${groupPath}/${artifact}/${ver}/${fileName}`;
-                            const libPath = path.join(libsPath, mavenRelPath);
-                            if (await fs.existsSync(libPath)) {
-                                classpath.push(libPath);
-                            }
-                        }
+    async function addLibsFromVersionData(versionData) {
+        if (!versionData.libraries) return;
+        const platformRaw = os.platform();
+        const osName = platformRaw === 'win32' ? 'windows' : platformRaw === 'darwin' ? 'osx' : 'linux';
+        for (const lib of versionData.libraries) {
+            let shouldInclude = true;
+            if (lib.rules && lib.rules.length > 0) {
+                shouldInclude = false;
+                for (const rule of lib.rules) {
+                    if (rule.action === 'allow') {
+                        if (!rule.os || rule.os.name === osName) { shouldInclude = true; break; }
+                    } else if (rule.action === 'disallow') {
+                        if (rule.os && rule.os.name === osName) { shouldInclude = false; break; }
                     }
                 }
             }
 
-            // Добавляем клиентский jar
-            const clientJar = path.join(versionsPath, version + '.jar');
-            if (await fs.existsSync(clientJar)) {
-                classpath.push(clientJar);
+            if (!shouldInclude) continue;
+
+            let libPath = null;
+            if (lib.downloads?.artifact?.path) {
+                libPath = path.join(libsPath, lib.downloads.artifact.path);
+            } else if (lib.name) {
+                const parts = lib.name.split(':');
+                if (parts.length >= 3) {
+                    const [group, artifact, ver] = parts;
+                    const groupPath = group.replace(/\./g, '/');
+                    const fileName = `${artifact}-${ver}.jar`;
+                    const mavenRelPath = `${groupPath}/${artifact}/${ver}/${fileName}`;
+                    libPath = path.join(libsPath, mavenRelPath);
+                }
             }
-        } catch (error) {
-            console.error('Error reading version.json:', error);
-            const jarFile = path.join(versionsPath, version + '.jar');
-            if (await fs.existsSync(jarFile)) {
-                classpath.push(jarFile);
+
+            if (libPath) {
+                const key = lib.name || libPath;
+                if (seenLibs.has(key)) continue;
+                if (await fs.existsSync(libPath)) {
+                    seenLibs.add(key);
+                    classpath.push(libPath);
+                } else {
+                    console.warn('Library not found on disk:', libPath);
+                }
             }
-        }
-    } else {
-        const jarFile = path.join(versionsPath, version + '.jar');
-        if (await fs.existsSync(jarFile)) {
-            classpath.push(jarFile);
         }
     }
 
+    // Рекурсивно обрабатываем inheritsFrom — собираем все родительские библиотеки
+    async function loadWithInherits(jsonPath) {
+        if (!(await fs.existsSync(jsonPath))) return null;
+        try {
+            const content = await fs.readFileSync(jsonPath, 'utf8');
+            const data = JSON.parse(content);
+            if (data.inheritsFrom && data.inheritsFrom !== data.id) {
+                const parentVersion = data.inheritsFrom;
+                const parentJsonPath = path.join(minecraftPath, 'versions', parentVersion, parentVersion + '.json');
+                await loadWithInherits(parentJsonPath);
+            }
+            await addLibsFromVersionData(data);
+            return data;
+        } catch (e) {
+            console.warn('Could not read version.json:', jsonPath, e);
+            return null;
+        }
+    }
+
+    const versionData = await loadWithInherits(versionJsonPath);
+
+    const clientJar = path.join(versionsPath, version + '.jar');
+    if (await fs.existsSync(clientJar)) {
+        classpath.push(clientJar);
+    }
+
     if (withMods) {
-        // Исключаем старые версии ASM (< 9.9)
-        classpath = classpath.filter(jarPath => {
-            if (jarPath.includes('org/ow2/asm') || jarPath.includes('org\\ow2\\asm')) {
-                const vm = jarPath.match(/asm[/\\](\d+)\.(\d+)/);
-                if (vm) {
-                    const maj = parseInt(vm[1]);
-                    const min = parseInt(vm[2]);
-                    if (maj < 9 || (maj === 9 && min < 9)) {
-                        console.log('Excluding old ASM version from classpath:', jarPath);
-                        return false;
+        // Если inheritsFrom не сработал (нет vanilla json), пробуем fallback
+        if (versionData && (!versionData.inheritsFrom)) {
+            const mcVersion = version.replace(/-(fabric|forge|neoforge|quilt|loader).*$/i, '');
+            if (mcVersion && mcVersion !== version) {
+                const vanillaJsonPath = path.join(minecraftPath, 'versions', mcVersion, mcVersion + '.json');
+                if (await fs.existsSync(vanillaJsonPath)) {
+                    try {
+                        const vanillaContent = await fs.readFileSync(vanillaJsonPath, 'utf8');
+                        const vanillaData = JSON.parse(vanillaContent);
+                        await addLibsFromVersionData(vanillaData);
+                        console.log('Added vanilla libs from', mcVersion, 'to classpath (fallback)');
+                    } catch (e) {
+                        console.warn('Could not read vanilla version.json:', e);
                     }
                 }
             }
-            return true;
-        });
+        }
 
-        // Рекурсивный поиск jar-файлов (async)
+        // Рекурсивный поиск jar-файлов через строковый readdir (Dirent не сериализуется через IPC)
         const findJars = async (dir) => {
             const jars = [];
             try {
-                const entries = await fs.readdirSync(dir, { withFileTypes: true });
-                for (const entry of entries) {
-                    const fullPath = path.join(dir, entry.name);
-                    if (entry.isDirectory) {  // boolean, not a function
-                        jars.push(...await findJars(fullPath));
-                    } else if (!entry.isDirectory && entry.name.endsWith('.jar')) {
-                        jars.push(fullPath);
-                    }
+                const names = await fs.readdirSync(dir);
+                for (const name of names) {
+                    const fullPath = path.join(dir, name);
+                    try {
+                        const stat = await fs.statSync(fullPath);
+                        if (stat.isDirectory) {
+                            const subJars = await findJars(fullPath);
+                            for (const j of subJars) jars.push(j);
+                        } else if (name.endsWith('.jar')) {
+                            jars.push(fullPath);
+                        }
+                    } catch { /* skip */ }
                 }
             } catch (e) {
                 console.warn('Error reading directory:', dir, e);
             }
             return jars;
         };
-
-        // Добавляем ASM 9.9+
-        const asmLibsPath = path.join(minecraftPath, 'libraries', 'org', 'ow2', 'asm');
-        if (await fs.existsSync(asmLibsPath)) {
-            const asmJars = await findJars(asmLibsPath);
-            for (const jar of asmJars) {
-                const vm = jar.match(/asm[/\\](\d+)\.(\d+)/);
-                if (vm) {
-                    const maj = parseInt(vm[1]);
-                    const min = parseInt(vm[2]);
-                    if (maj > 9 || (maj === 9 && min >= 9)) {
-                        if (!classpath.includes(jar)) {
-                            classpath.push(jar);
-                            console.log('Added ASM library to classpath:', jar);
-                        }
-                    } else {
-                        console.log('Skipping old ASM version:', jar);
-                    }
-                } else if (!classpath.includes(jar)) {
-                    classpath.push(jar);
-                    console.log('Added ASM library to classpath (version unknown):', jar);
-                }
-            }
-        }
 
         // Добавляем Fabric Loader библиотеки
         const fabricLibsPath = path.join(minecraftPath, 'libraries', 'net', 'fabricmc');
@@ -965,8 +993,28 @@ async function getMinecraftClasspath(minecraftPath, withMods, versionOverride = 
             for (const jar of fabricJars) {
                 if (!classpath.includes(jar)) {
                     classpath.push(jar);
-                    console.log('Added Fabric library to classpath:', jar);
                 }
+            }
+        }
+
+        // Обязательно сканируем ВСЮ папку libraries — добавляем любые jar,
+        // которые ещё не в classpath. Это гарантирует joptsimple и прочие
+        // транзитивные зависимости Fabric Loader'а.
+        const allLibJars = await findJars(path.join(minecraftPath, 'libraries'));
+        for (const jar of allLibJars) {
+            // Пропускаем ASM < 9.9 (конфликтует с Fabric)
+            if (jar.includes('org' + path.sep + 'ow2' + path.sep + 'asm') || jar.includes('org/ow2/asm')) {
+                const vm = jar.match(/asm[/\\](\d+)\.(\d+)/);
+                if (vm) {
+                    const maj = parseInt(vm[1]);
+                    const min = parseInt(vm[2]);
+                    if (maj < 9 || (maj === 9 && min < 9)) {
+                        continue;
+                    }
+                }
+            }
+            if (!classpath.includes(jar)) {
+                classpath.push(jar);
             }
         }
 
@@ -980,6 +1028,12 @@ async function getMinecraftClasspath(minecraftPath, withMods, versionOverride = 
             }
         }
     }
+
+    // Диагностика: проверяем наличие критичных библиотек
+    const hasJoptSimple = classpath.some(p => p.toLowerCase().includes('jopt-simple') || p.toLowerCase().includes('joptsimple'));
+    const hasLog4j = classpath.some(p => p.toLowerCase().includes('log4j'));
+    const hasGuava = classpath.some(p => p.toLowerCase().includes('guava'));
+    console.log('Classpath diagnostics - joptsimple:', hasJoptSimple, 'log4j:', hasLog4j, 'guava:', hasGuava);
 
     const classpathString = classpath.join(path.delimiter);
     console.log('Classpath contains', classpath.length, 'entries');
