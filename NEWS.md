@@ -1,6 +1,6 @@
 
-![Uploading 20251011_182907.jpg…]()
-![Uploading image.png…]()
+![239ba7fac6018b7cff1e72354e40d661_0.jpg]()
+
 
 
 Я не могу с ее ног
