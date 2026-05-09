@@ -545,7 +545,7 @@ function buildInstanceCard(inst, onReload) {
 
     card.querySelector('[data-action="export"]').addEventListener('click', () => exportInstance(inst));
 
-    card.querySelector('[data-action="delete"]').addEventListener('click', () => {
+        card.querySelector('[data-action="delete"]').addEventListener('click', () => {
         showLauncherConfirm(
             `Удалить «${inst.label}»?\nВсе данные будут удалены безвозвратно!`,
             'Удалить'
@@ -559,7 +559,9 @@ function buildInstanceCard(inst, onReload) {
                 await window.electronAPI.instances.delete(inst.instPath);
                 clearInterval(fakeInterval);
                 progress.setProgress(100); progress.setStatus('Готово!');
-                await delay(500); progress.close(); onReload();
+                await delay(500); progress.close();
+                invalidateInstancesCache(); // force re-read from disk
+                onReload();
             } catch (err) {
                 clearInterval(fakeInterval); progress.close();
                 showLauncherAlert(`Ошибка: ${err.message}`, 'Ошибка');

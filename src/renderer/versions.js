@@ -122,12 +122,15 @@ async function getInstalledInstances() {
         const entries = await api.fs.readdir(base);
         const results = [];
 
-        for (const entry of entries) {
-            const dir = entry.name;
-            if (!dir.startsWith('minecraft-')) continue;
-            if (!entry.isDirectory) continue;
+    for (const entry of entries) {
+        const dir = entry.name;
+        if (!dir.startsWith('minecraft-')) continue;
+        if (!entry.isDirectory) continue;
+        // Пропускаем только minecraft-release-* — такие папки создаются автоматически
+        // при запуске Vanilla версий. Инстансы с fabric/forge/neoforge/quilt НЕ трогаем.
+        if (/^minecraft-release-\d[\d.]*\d$/.test(dir)) continue;
 
-            let meta = null;
+        let meta = null;
             try {
                 const mp = api.path.join(base, dir, 'instance.json');
                 if (await api.fs.exists(mp)) {
@@ -213,17 +216,19 @@ async function fetchVersionList() {
         // ── Все релизы Vanilla ──
         const releases = (mojangManifest && Array.isArray(mojangManifest.versions))
             ? mojangManifest.versions.filter(v => v.type === 'release').map(v => v.id)
-            : [];
-        releases.forEach(id => {
-            list.push({ id: `release:${id}`, type: 'release', label: id, mcVersion: id, description: 'Vanilla', icon: '🟢' });
-        });
+            : null; // null = manifest fetch failed, null means "don't filter"
+        if (releases) {
+            releases.forEach(id => {
+                list.push({ id: `release:${id}`, type: 'release', label: id, mcVersion: id, description: 'Vanilla', icon: '🟢' });
+            });
+        }
 
         // ── Fabric — только версии MC которые поддерживает Fabric ──
         const fabricSupported = new Set();
         if (fabricGames && Array.isArray(fabricGames)) {
             fabricGames.forEach(v => {
                 const id = v?.version || (typeof v === 'string' ? v : null);
-                if (id && releases.includes(id)) fabricSupported.add(id);
+                if (id && (!releases || releases.includes(id))) fabricSupported.add(id);
             });
         }
         fabricSupported.forEach(id => {
@@ -235,7 +240,7 @@ async function fetchVersionList() {
             const forgeMcVersions = new Set();
             Object.keys(forgePromos.promos).forEach(key => {
                 const mc = key.split('-')[0];
-                if (releases.includes(mc)) forgeMcVersions.add(mc);
+                if (!releases || releases.includes(mc)) forgeMcVersions.add(mc);
             });
             forgeMcVersions.forEach(mc => {
                 const rec      = forgePromos.promos[`${mc}-recommended`];
@@ -248,7 +253,7 @@ async function fetchVersionList() {
         }
 
         // ── NeoForge — версии начиная с 1.20.2 ──
-        const neoSupported = releases.filter(id => {
+        const neoSupported = !releases ? [] : releases.filter(id => {
             const [maj, min] = id.split('.').map(Number);
             return maj === 1 && (min > 20 || (min === 20 && id.split('.')[2] >= 2));
         });
@@ -261,7 +266,7 @@ async function fetchVersionList() {
         if (quiltGames && Array.isArray(quiltGames)) {
             quiltGames.forEach(v => {
                 const id = v?.version || (typeof v === 'string' ? v : null);
-                if (id && releases.includes(id)) quiltSupported.add(id);
+                if (id && (!releases || releases.includes(id))) quiltSupported.add(id);
             });
         }
         quiltSupported.forEach(id => {

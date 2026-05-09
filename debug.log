@@ -1,166 +1,800 @@
-[2026-03-15T16:41:33.884Z][INFO] App ready [PLAYTIME-BUILD v3]
-[2026-03-15T16:41:33.939Z][INFO] Creating main window
-[2026-03-15T16:41:33.998Z][INFO] Main window created successfully
-[2026-03-15T16:41:34.006Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
-[2026-03-15T16:41:34.043Z][INFO] Discord RPC connected
-[2026-03-15T16:41:34.448Z][INFO] Fetching NEWS.md from GitHub
-[2026-03-15T16:41:34.573Z][INFO] Parsed 2 news items from NEWS.md
-[2026-03-15T16:41:34.595Z][INFO] Checking for updates. Current version: 2.0.6
-[2026-03-15T16:41:35.000Z][INFO] Latest version on GitHub: 2.0.8
-[2026-03-15T16:41:35.001Z][INFO] New version available: 2.0.8
-[2026-03-15T16:41:37.005Z][INFO] Checking for updates. Current version: 2.0.6
-[2026-03-15T16:41:37.066Z][INFO] Latest version on GitHub: 2.0.8
-[2026-03-15T16:41:37.067Z][INFO] New version available: 2.0.8
-[2026-03-15T16:41:42.716Z][INFO] Java OK (custom): 21 at C:\Users\kiril\AppData\Roaming\.fixlauncher\java\extracted\jdk-21.0.10+7\bin\java.exe
-[2026-03-15T16:41:42.940Z][ERROR] installer:check-and-download:
-[2026-03-15T16:42:22.915Z][INFO] Opening path: C:\Users\kiril\AppData\Roaming\.fixlauncher\minecraft-fabric-1.21.11
-[2026-03-15T16:42:56.964Z][INFO] All windows closed
-[2026-03-15T16:42:56.966Z][INFO] App quitting
-[2026-03-15T16:43:04.689Z][INFO] App ready [PLAYTIME-BUILD v3]
-[2026-03-15T16:43:04.747Z][INFO] Creating main window
-[2026-03-15T16:43:04.803Z][INFO] Main window created successfully
-[2026-03-15T16:43:04.812Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
-[2026-03-15T16:43:04.834Z][INFO] Discord RPC connected
-[2026-03-15T16:43:05.227Z][INFO] Fetching NEWS.md from GitHub
-[2026-03-15T16:43:05.347Z][INFO] Parsed 2 news items from NEWS.md
-[2026-03-15T16:43:05.391Z][INFO] Checking for updates. Current version: 2.0.6
-[2026-03-15T16:43:05.728Z][INFO] Latest version on GitHub: 2.0.8
-[2026-03-15T16:43:05.729Z][INFO] New version available: 2.0.8
-[2026-03-15T16:43:07.820Z][INFO] Checking for updates. Current version: 2.0.6
-[2026-03-15T16:43:07.881Z][INFO] Latest version on GitHub: 2.0.8
-[2026-03-15T16:43:07.883Z][INFO] New version available: 2.0.8
-[2026-03-15T16:43:10.446Z][INFO] Java OK (custom): 21 at C:\Users\kiril\AppData\Roaming\.fixlauncher\java\extracted\jdk-21.0.10+7\bin\java.exe
-[2026-03-15T16:47:01.312Z][INFO] extractNatives: version=1.21.11, nativeCls=natives-windows, libraries=107
-[2026-03-15T16:47:01.313Z][INFO] extractNatives: legacy (classifiers) native libs found: 0
-[2026-03-15T16:47:01.315Z][INFO] extractNatives: modern (artifact) native libs found: 9
-[2026-03-15T16:47:01.316Z][INFO] extractNatives: total native libs to extract: 9
-[2026-03-15T16:47:01.317Z][INFO] extractNatives: [1/9] com/mojang/jtracy/1.0.37/jtracy-1.0.37-natives-windows.jar, exists=true
-[2026-03-15T16:47:01.325Z][INFO] extractNatives: extracted 1 files from jtracy-1.0.37-natives-windows.jar
-[2026-03-15T16:47:01.326Z][INFO] extractNatives: [2/9] org/lwjgl/lwjgl-freetype/3.3.3/lwjgl-freetype-3.3.3-natives-windows.jar, exists=true
-[2026-03-15T16:47:01.345Z][INFO] extractNatives: extracted 1 files from lwjgl-freetype-3.3.3-natives-windows.jar
-[2026-03-15T16:47:01.347Z][INFO] extractNatives: [3/9] org/lwjgl/lwjgl-glfw/3.3.3/lwjgl-glfw-3.3.3-natives-windows.jar, exists=true
-[2026-03-15T16:47:01.356Z][INFO] extractNatives: extracted 1 files from lwjgl-glfw-3.3.3-natives-windows.jar
-[2026-03-15T16:47:01.358Z][INFO] extractNatives: [4/9] org/lwjgl/lwjgl-jemalloc/3.3.3/lwjgl-jemalloc-3.3.3-natives-windows.jar, exists=true
-[2026-03-15T16:47:01.377Z][INFO] extractNatives: extracted 1 files from lwjgl-jemalloc-3.3.3-natives-windows.jar
-[2026-03-15T16:47:01.381Z][INFO] extractNatives: [5/9] org/lwjgl/lwjgl-openal/3.3.3/lwjgl-openal-3.3.3-natives-windows.jar, exists=true
-[2026-03-15T16:47:01.402Z][INFO] extractNatives: extracted 1 files from lwjgl-openal-3.3.3-natives-windows.jar
-[2026-03-15T16:47:01.404Z][INFO] extractNatives: [6/9] org/lwjgl/lwjgl-opengl/3.3.3/lwjgl-opengl-3.3.3-natives-windows.jar, exists=true
-[2026-03-15T16:47:01.418Z][INFO] extractNatives: extracted 1 files from lwjgl-opengl-3.3.3-natives-windows.jar
-[2026-03-15T16:47:01.423Z][INFO] extractNatives: [7/9] org/lwjgl/lwjgl-stb/3.3.3/lwjgl-stb-3.3.3-natives-windows.jar, exists=true
-[2026-03-15T16:47:01.432Z][INFO] extractNatives: extracted 1 files from lwjgl-stb-3.3.3-natives-windows.jar
-[2026-03-15T16:47:01.435Z][INFO] extractNatives: [8/9] org/lwjgl/lwjgl-tinyfd/3.3.3/lwjgl-tinyfd-3.3.3-natives-windows.jar, exists=true
-[2026-03-15T16:47:01.451Z][INFO] extractNatives: extracted 1 files from lwjgl-tinyfd-3.3.3-natives-windows.jar
-[2026-03-15T16:47:01.455Z][INFO] extractNatives: [9/9] org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3-natives-windows.jar, exists=true
-[2026-03-15T16:47:01.469Z][INFO] extractNatives: extracted 1 files from lwjgl-3.3.3-natives-windows.jar
-[2026-03-15T16:47:01.481Z][INFO] extractNatives: done. Files in natives (9): freetype.dll, glfw.dll, jemalloc.dll, jtracy-jni-windows.dll, lwjgl.dll, lwjgl_opengl.dll, lwjgl_stb.dll, lwjgl_tinyfd.dll, OpenAL.dll
-[2026-03-15T16:47:03.875Z][INFO] mc:spawn — java: C:\Users\kiril\AppData\Roaming\.fixlauncher\java\extracted\jdk-21.0.10+7\bin\java.exe, args count: 44, cwd: C:\Users\kiril\AppData\Roaming\.fixlauncher\minecraft-fabric-1.21.11
-[2026-03-15T16:47:03.887Z][INFO] Minecraft spawned with PID: 3992
-[2026-03-15T16:47:03.891Z][INFO] Playtime saved: {"totalSeconds":67001,"sessionStart":1773593223889,"daily":{"2026-03-15":6758}}
-[2026-03-15T16:47:43.960Z][INFO] Playtime saved: {"totalSeconds":67041,"sessionStart":null,"daily":{"2026-03-15":6798}}
-[2026-03-15T16:47:43.961Z][INFO] Minecraft closed, reopening launcher
-[2026-03-15T16:47:43.962Z][INFO] Showing existing window
-[2026-03-15T16:47:44.803Z][INFO] Minecraft exited: code=0 signal=null
-[2026-03-15T16:47:50.092Z][INFO] [screenshots] Found 0 screenshots across 1 root(s)
-[2026-03-15T16:47:52.227Z][INFO] All windows closed
-[2026-03-15T16:47:52.229Z][INFO] App quitting
-[2026-03-17T23:24:25.703Z][INFO] App ready [PLAYTIME-BUILD v3]
-[2026-03-17T23:24:25.753Z][INFO] Creating main window
-[2026-03-17T23:24:25.808Z][INFO] Main window created successfully
-[2026-03-17T23:24:25.816Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
-[2026-03-17T23:24:25.832Z][WARN] Discord RPC login failed: Could not connect
-[2026-03-17T23:24:26.178Z][INFO] Fetching NEWS.md from GitHub
-[2026-03-17T23:24:26.212Z][INFO] Checking for updates. Current version: 2.0.8
-[2026-03-17T23:24:26.576Z][INFO] Parsed 2 news items from NEWS.md
-[2026-03-17T23:24:26.688Z][INFO] Latest version on GitHub: 2.0.8
-[2026-03-17T23:24:26.689Z][INFO] No updates available.
-[2026-03-17T23:24:28.809Z][INFO] Checking for updates. Current version: 2.0.8
-[2026-03-17T23:24:28.893Z][INFO] Latest version on GitHub: 2.0.8
-[2026-03-17T23:24:28.894Z][INFO] No updates available.
-[2026-03-17T23:24:35.125Z][INFO] [screenshots] Found 3 screenshots across 1 root(s)
-[2026-03-17T23:24:40.843Z][INFO] Discord RPC reconnect attempt...
-[2026-03-17T23:24:40.849Z][WARN] Discord RPC login failed: Could not connect
-[2026-03-17T23:24:55.852Z][INFO] Discord RPC reconnect attempt...
-[2026-03-17T23:24:55.857Z][WARN] Discord RPC login failed: Could not connect
-[2026-03-17T23:25:10.862Z][INFO] Discord RPC reconnect attempt...
-[2026-03-17T23:25:10.865Z][WARN] Discord RPC login failed: Could not connect
-[2026-03-17T23:25:25.863Z][INFO] Discord RPC reconnect attempt...
-[2026-03-17T23:25:25.867Z][WARN] Discord RPC login failed: Could not connect
-[2026-03-17T23:25:40.875Z][INFO] Discord RPC reconnect attempt...
-[2026-03-17T23:25:40.878Z][WARN] Discord RPC login failed: Could not connect
-[2026-03-17T23:25:47.145Z][INFO] All windows closed
-[2026-03-17T23:25:47.146Z][INFO] App quitting
-[2026-03-17T23:26:25.241Z][INFO] App ready [PLAYTIME-BUILD v3]
-[2026-03-17T23:26:25.289Z][INFO] Creating main window
-[2026-03-17T23:26:25.343Z][INFO] Main window created successfully
-[2026-03-17T23:26:25.352Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
-[2026-03-17T23:26:25.369Z][WARN] Discord RPC login failed: Could not connect
-[2026-03-17T23:26:25.750Z][INFO] Fetching NEWS.md from GitHub
-[2026-03-17T23:26:25.884Z][INFO] Parsed 2 news items from NEWS.md
-[2026-03-17T23:26:25.907Z][INFO] Checking for updates. Current version: 2.0.8
-[2026-03-17T23:26:26.555Z][INFO] Latest version on GitHub: 2.0.8
-[2026-03-17T23:26:26.557Z][INFO] No updates available.
-[2026-03-17T23:26:28.354Z][INFO] Checking for updates. Current version: 2.0.8
-[2026-03-17T23:26:28.419Z][INFO] Latest version on GitHub: 2.0.8
-[2026-03-17T23:26:28.421Z][INFO] No updates available.
-[2026-03-17T23:26:40.371Z][INFO] Discord RPC reconnect attempt...
-[2026-03-17T23:26:40.375Z][WARN] Discord RPC login failed: Could not connect
-[2026-03-17T23:26:55.213Z][INFO] [screenshots] Found 3 screenshots across 1 root(s)
-[2026-03-17T23:26:55.372Z][INFO] Discord RPC reconnect attempt...
-[2026-03-17T23:26:55.376Z][WARN] Discord RPC login failed: Could not connect
-[2026-03-17T23:26:58.206Z][INFO] All windows closed
-[2026-03-17T23:26:58.207Z][INFO] App quitting
-[2026-03-17T23:28:09.946Z][INFO] App ready [PLAYTIME-BUILD v3]
-[2026-03-17T23:28:09.993Z][INFO] Creating main window
-[2026-03-17T23:28:10.037Z][INFO] Main window created successfully
-[2026-03-17T23:28:10.044Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
-[2026-03-17T23:28:10.060Z][WARN] Discord RPC login failed: Could not connect
-[2026-03-17T23:28:10.391Z][INFO] Fetching NEWS.md from GitHub
-[2026-03-17T23:28:10.409Z][INFO] Checking for updates. Current version: 2.0.8
-[2026-03-17T23:28:10.696Z][INFO] Parsed 2 news items from NEWS.md
-[2026-03-17T23:28:10.896Z][INFO] Latest version on GitHub: 2.0.8
-[2026-03-17T23:28:10.897Z][INFO] No updates available.
-[2026-03-17T23:28:13.041Z][INFO] Checking for updates. Current version: 2.0.8
-[2026-03-17T23:28:13.114Z][INFO] Latest version on GitHub: 2.0.8
-[2026-03-17T23:28:13.115Z][INFO] No updates available.
-[2026-03-17T23:28:25.066Z][INFO] Discord RPC reconnect attempt...
-[2026-03-17T23:28:25.071Z][WARN] Discord RPC login failed: Could not connect
-[2026-03-17T23:28:40.080Z][INFO] Discord RPC reconnect attempt...
-[2026-03-17T23:28:40.086Z][WARN] Discord RPC login failed: Could not connect
-[2026-03-17T23:28:55.090Z][INFO] Discord RPC reconnect attempt...
-[2026-03-17T23:28:55.094Z][WARN] Discord RPC login failed: Could not connect
-[2026-03-17T23:29:08.528Z][INFO] All windows closed
-[2026-03-17T23:29:08.529Z][INFO] App quitting
-[2026-03-17T23:31:48.898Z][INFO] App ready [PLAYTIME-BUILD v3]
-[2026-03-17T23:31:48.949Z][INFO] Creating main window
-[2026-03-17T23:31:48.994Z][INFO] Main window created successfully
-[2026-03-17T23:31:49.002Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
-[2026-03-17T23:31:49.020Z][WARN] Discord RPC login failed: Could not connect
-[2026-03-17T23:31:49.412Z][INFO] Fetching NEWS.md from GitHub
-[2026-03-17T23:31:49.549Z][INFO] Checking for updates. Current version: 2.0.9
-[2026-03-17T23:31:49.922Z][INFO] Parsed 2 news items from NEWS.md
-[2026-03-17T23:31:50.065Z][INFO] Latest version on GitHub: 2.0.8
-[2026-03-17T23:31:50.067Z][INFO] No updates available.
-[2026-03-17T23:31:51.998Z][INFO] Checking for updates. Current version: 2.0.9
-[2026-03-17T23:31:52.057Z][INFO] Latest version on GitHub: 2.0.8
-[2026-03-17T23:31:52.057Z][INFO] No updates available.
-[2026-03-17T23:32:04.024Z][INFO] Discord RPC reconnect attempt...
-[2026-03-17T23:32:04.029Z][WARN] Discord RPC login failed: Could not connect
-[2026-03-17T23:32:19.029Z][INFO] Discord RPC reconnect attempt...
-[2026-03-17T23:32:19.032Z][WARN] Discord RPC login failed: Could not connect
-[2026-03-17T23:32:19.302Z][INFO] All windows closed
-[2026-03-17T23:32:19.303Z][INFO] App quitting
-[2026-04-05T21:56:35.204Z][INFO] App ready [PLAYTIME-BUILD v3]
-[2026-04-05T21:56:35.220Z][INFO] Creating main window
-[2026-04-05T21:56:35.287Z][INFO] Main window created successfully
-[2026-04-05T21:56:35.298Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
-[2026-04-05T21:56:35.730Z][INFO] Fetching NEWS.md from GitHub
-[2026-04-05T21:56:35.903Z][INFO] Checking for updates. Current version: 2.0.9
-[2026-04-05T21:56:36.191Z][INFO] Parsed 2 news items from NEWS.md
-[2026-04-05T21:56:36.487Z][INFO] Latest version on GitHub: 2.0.9
-[2026-04-05T21:56:36.487Z][INFO] No updates available.
-[2026-04-05T21:56:38.300Z][INFO] Checking for updates. Current version: 2.0.9
-[2026-04-05T21:56:38.356Z][INFO] Latest version on GitHub: 2.0.9
-[2026-04-05T21:56:38.357Z][INFO] No updates available.
-[2026-04-05T21:56:49.278Z][INFO] [screenshots] Found 4 screenshots across 1 root(s)
-[2026-04-05T21:58:38.083Z][INFO] All windows closed
-[2026-04-05T21:58:38.084Z][INFO] App quitting
+[2026-05-09T00:47:28.293Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T00:47:28.311Z][INFO] Creating main window
+[2026-05-09T00:47:28.382Z][INFO] Main window created successfully
+[2026-05-09T00:47:28.390Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T00:47:29.917Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T00:47:29.962Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T00:47:30.176Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T00:47:30.318Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T00:47:30.319Z][INFO] No updates available.
+[2026-05-09T00:47:31.394Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T00:47:31.454Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T00:47:31.457Z][INFO] No updates available.
+[2026-05-09T00:47:47.884Z][INFO] [screenshots] Found 0 screenshots across 1 root(s)
+[2026-05-09T00:48:04.102Z][INFO] All windows closed
+[2026-05-09T00:48:04.103Z][INFO] App quitting
+[2026-05-09T01:20:24.984Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T01:20:25.001Z][INFO] Creating main window
+[2026-05-09T01:20:25.085Z][INFO] Main window created successfully
+[2026-05-09T01:20:25.093Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T01:20:25.530Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T01:20:25.667Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T01:20:25.795Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T01:20:26.005Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T01:20:26.006Z][INFO] No updates available.
+[2026-05-09T01:20:28.087Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T01:20:28.142Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T01:20:28.143Z][INFO] No updates available.
+[2026-05-09T01:20:28.339Z][INFO] [screenshots] Found 0 screenshots across 1 root(s)
+[2026-05-09T01:20:35.216Z][INFO] All windows closed
+[2026-05-09T01:20:35.216Z][INFO] App quitting
+[2026-05-09T01:20:37.244Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T01:20:37.263Z][INFO] Creating main window
+[2026-05-09T01:20:37.325Z][INFO] Main window created successfully
+[2026-05-09T01:20:37.333Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T01:20:37.766Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T01:20:37.892Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T01:20:37.905Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T01:20:38.062Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T01:20:38.062Z][INFO] No updates available.
+[2026-05-09T01:20:40.331Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T01:20:40.388Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T01:20:40.389Z][INFO] No updates available.
+[2026-05-09T01:20:41.557Z][INFO] [screenshots] Found 0 screenshots across 1 root(s)
+[2026-05-09T01:21:03.899Z][INFO] Java too old (21) at C:\Program Files\Java\jdk-21.0.10\bin\java.exe, downloading 25...
+[2026-05-09T01:21:04.343Z][INFO] Downloading Java from:
+[2026-05-09T01:21:19.427Z][INFO] Java 25 installed:
+[2026-05-09T01:24:41.242Z][INFO] downloadAssets: 4746 total, 4746 downloaded
+[2026-05-09T01:24:41.245Z][INFO] extractNatives: version=26.1.2, nativeCls=natives-windows, libraries=107
+[2026-05-09T01:24:41.246Z][INFO] extractNatives: legacy (classifiers) native libs found: 0
+[2026-05-09T01:24:41.248Z][INFO] extractNatives: modern (artifact) native libs found: 9
+[2026-05-09T01:24:41.249Z][INFO] extractNatives: total native libs to extract: 9
+[2026-05-09T01:24:41.250Z][INFO] extractNatives: [1/9] com/mojang/jtracy/1.0.37/jtracy-1.0.37-natives-windows.jar, exists=true
+[2026-05-09T01:24:41.256Z][INFO] extractNatives: extracted 1 files from jtracy-1.0.37-natives-windows.jar
+[2026-05-09T01:24:41.257Z][INFO] extractNatives: [2/9] org/lwjgl/lwjgl-freetype/3.4.1/lwjgl-freetype-3.4.1-natives-windows.jar, exists=true
+[2026-05-09T01:24:41.278Z][INFO] extractNatives: extracted 1 files from lwjgl-freetype-3.4.1-natives-windows.jar
+[2026-05-09T01:24:41.280Z][INFO] extractNatives: [3/9] org/lwjgl/lwjgl-glfw/3.4.1/lwjgl-glfw-3.4.1-natives-windows.jar, exists=true
+[2026-05-09T01:24:41.288Z][INFO] extractNatives: extracted 1 files from lwjgl-glfw-3.4.1-natives-windows.jar
+[2026-05-09T01:24:41.291Z][INFO] extractNatives: [4/9] org/lwjgl/lwjgl-jemalloc/3.4.1/lwjgl-jemalloc-3.4.1-natives-windows.jar, exists=true
+[2026-05-09T01:24:41.298Z][INFO] extractNatives: extracted 1 files from lwjgl-jemalloc-3.4.1-natives-windows.jar
+[2026-05-09T01:24:41.300Z][INFO] extractNatives: [5/9] org/lwjgl/lwjgl-openal/3.4.1/lwjgl-openal-3.4.1-natives-windows.jar, exists=true
+[2026-05-09T01:24:41.320Z][INFO] extractNatives: extracted 1 files from lwjgl-openal-3.4.1-natives-windows.jar
+[2026-05-09T01:24:41.326Z][INFO] extractNatives: [6/9] org/lwjgl/lwjgl-opengl/3.4.1/lwjgl-opengl-3.4.1-natives-windows.jar, exists=true
+[2026-05-09T01:24:41.335Z][INFO] extractNatives: extracted 1 files from lwjgl-opengl-3.4.1-natives-windows.jar
+[2026-05-09T01:24:41.338Z][INFO] extractNatives: [7/9] org/lwjgl/lwjgl-stb/3.4.1/lwjgl-stb-3.4.1-natives-windows.jar, exists=true
+[2026-05-09T01:24:41.358Z][INFO] extractNatives: extracted 1 files from lwjgl-stb-3.4.1-natives-windows.jar
+[2026-05-09T01:24:41.360Z][INFO] extractNatives: [8/9] org/lwjgl/lwjgl-tinyfd/3.4.1/lwjgl-tinyfd-3.4.1-natives-windows.jar, exists=true
+[2026-05-09T01:24:41.367Z][INFO] extractNatives: extracted 1 files from lwjgl-tinyfd-3.4.1-natives-windows.jar
+[2026-05-09T01:24:41.369Z][INFO] extractNatives: [9/9] org/lwjgl/lwjgl/3.4.1/lwjgl-3.4.1-natives-windows.jar, exists=true
+[2026-05-09T01:24:41.381Z][INFO] extractNatives: extracted 1 files from lwjgl-3.4.1-natives-windows.jar
+[2026-05-09T01:24:41.382Z][INFO] extractNatives: done. Files in natives (9): freetype.dll, glfw.dll, jemalloc.dll, jtracy-jni-windows.dll, lwjgl.dll, lwjgl_opengl.dll, lwjgl_stb.dll, lwjgl_tinyfd.dll, OpenAL.dll
+[2026-05-09T01:25:23.295Z][INFO] All windows closed
+[2026-05-09T01:25:23.296Z][INFO] App quitting
+[2026-05-09T01:28:32.059Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T01:28:32.074Z][INFO] Creating main window
+[2026-05-09T01:28:32.126Z][INFO] Main window created successfully
+[2026-05-09T01:28:32.135Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T01:28:32.526Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T01:28:32.560Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T01:28:32.780Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T01:28:32.968Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T01:28:32.969Z][INFO] No updates available.
+[2026-05-09T01:28:35.128Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T01:28:35.189Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T01:28:35.189Z][INFO] No updates available.
+[2026-05-09T01:28:36.033Z][INFO] Java OK (custom): 25 at C:\Users\kiril\AppData\Roaming\.fixlauncher\java\extracted\jdk-25.0.3+9\bin\java.exe
+[2026-05-09T01:28:36.036Z][INFO] Version already installed:
+[2026-05-09T01:28:38.610Z][INFO] mc:spawn — java: C:\Users\kiril\AppData\Roaming\.fixlauncher\java\extracted\jdk-25.0.3+9\bin\java.exe, args count: 44, cwd: C:\Users\kiril\AppData\Roaming\.fixlauncher\minecraft-fabric-26.1.2
+[2026-05-09T01:28:38.626Z][INFO] Minecraft spawned with PID: 17888
+[2026-05-09T01:28:38.633Z][INFO] Playtime saved: {"totalSeconds":255833,"sessionStart":1778290118629,"daily":{"2026-04-26":175,"2026-04-28":8121,"2026-04-29":4400,"2026-05-01":7752,"2026-05-02":9895,"2026-05-03":63789,"2026-05-04":15779,"2026-05-06":86196,"2026-05-07":20932,"2026-05-08":33427,"2026-05-09":5367}}
+[2026-05-09T01:28:56.327Z][INFO] Minecraft exited: code=1 signal=null
+[2026-05-09T01:28:56.328Z][ERROR] Minecraft exit output (last 100 lines):
+[04:28:39] [ERROR] [FabricLoader/]: Uncaught exception in thread "main"
+net.fabricmc.loader.impl.util.ExceptionUtil$WrappedException: java.io.IOException: error reading C:\Users\kiril\AppData\Roaming\.fixlauncher\minecraft-fabric-26.1.2\libraries\net\fabricmc\intermediary\26.1.2\intermediary-26.1.2.jar
+	at net.fabricmc.loader.impl.util.ExceptionUtil.wrap(ExceptionUtil.java:51)
+	at net.fabricmc.loader.impl.game.minecraft.MinecraftGameProvider.locateGame(MinecraftGameProvider.java:260)
+	at net.fabricmc.loader.impl.launch.knot.Knot.createGameProvider(Knot.java:171)
+	at net.fabricmc.loader.impl.launch.knot.Knot.init(Knot.java:128)
+	at net.fabricmc.loader.impl.launch.knot.Knot.launch(Knot.java:66)
+	at net.fabricmc.loader.impl.launch.knot.KnotClient.main(KnotClient.java:23)
+Caused by: java.io.IOException: error reading C:\Users\kiril\AppData\Roaming\.fixlauncher\minecraft-fabric-26.1.2\libraries\net\fabricmc\intermediary\26.1.2\intermediary-26.1.2.jar
+	at net.fabricmc.loader.impl.game.LibClassifier.process(LibClassifier.java:215)
+	at net.fabricmc.loader.impl.game.LibClassifier.process(LibClassifier.java:162)
+	at net.fabricmc.loader.impl.game.minecraft.MinecraftGameProvider.locateGame(MinecraftGameProvider.java:209)
+	... 4 more
+Caused by: java.util.zip.ZipException: zip file is empty
+	at java.base/java.util.zip.ZipFile$Source.zerror(ZipFile.java:1831)
+	at java.base/java.util.zip.ZipFile$Source.findEND(ZipFile.java:1609)
+	at java.base/java.util.zip.ZipFile$Source.initCEN(ZipFile.java:1701)
+	at java.base/java.util.zip.ZipFile$Source.<init>(ZipFile.java:1542)
+	at java.base/java.util.zip.ZipFile$Source.get(ZipFile.java:1506)
+	at java.base/java.util.zip.ZipFile$CleanableResource.<init>(ZipFile.java:704)
+	at java.base/java.util.zip.ZipFile.<init>(ZipFile.java:204)
+	at java.base/java.util.zip.ZipFile.<init>(ZipFile.java:150)
+	at java.base/java.util.zip.ZipFile.<init>(ZipFile.java:164)
+	at net.fabricmc.loader.impl.game.LibClassifier.process(LibClassifier.java:202)
+	... 6 more
+
+[2026-05-09T01:28:58.694Z][INFO] Playtime saved: {"totalSeconds":255853,"sessionStart":null,"daily":{"2026-04-26":175,"2026-04-28":8121,"2026-04-29":4400,"2026-05-01":7752,"2026-05-02":9895,"2026-05-03":63789,"2026-05-04":15779,"2026-05-06":86196,"2026-05-07":20932,"2026-05-08":33427,"2026-05-09":5387}}
+[2026-05-09T01:28:58.695Z][INFO] Minecraft closed, reopening launcher
+[2026-05-09T01:28:58.695Z][INFO] Showing existing window
+[2026-05-09T01:29:09.037Z][INFO] All windows closed
+[2026-05-09T01:29:09.038Z][INFO] App quitting
+[2026-05-09T01:33:14.166Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T01:33:14.184Z][INFO] Creating main window
+[2026-05-09T01:33:14.250Z][INFO] Main window created successfully
+[2026-05-09T01:33:14.264Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T01:33:14.745Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T01:33:14.889Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T01:33:14.908Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T01:33:15.245Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T01:33:15.246Z][INFO] No updates available.
+[2026-05-09T01:33:17.079Z][INFO] [screenshots] Found 0 screenshots across 1 root(s)
+[2026-05-09T01:33:17.258Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T01:33:17.315Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T01:33:17.316Z][INFO] No updates available.
+[2026-05-09T01:33:23.619Z][INFO] Java OK (custom): 25 at C:\Users\kiril\AppData\Roaming\.fixlauncher\java\extracted\jdk-25.0.3+9\bin\java.exe
+[2026-05-09T01:33:23.626Z][INFO] Version already installed:
+[2026-05-09T01:33:25.628Z][INFO] mc:spawn — java: C:\Users\kiril\AppData\Roaming\.fixlauncher\java\extracted\jdk-25.0.3+9\bin\java.exe, args count: 44, cwd: C:\Users\kiril\AppData\Roaming\.fixlauncher\minecraft-fabric-26.1.2
+[2026-05-09T01:33:25.648Z][INFO] Minecraft spawned with PID: 13072
+[2026-05-09T01:33:25.653Z][INFO] Playtime saved: {"totalSeconds":255853,"sessionStart":1778290405651,"daily":{"2026-04-26":175,"2026-04-28":8121,"2026-04-29":4400,"2026-05-01":7752,"2026-05-02":9895,"2026-05-03":63789,"2026-05-04":15779,"2026-05-06":86196,"2026-05-07":20932,"2026-05-08":33427,"2026-05-09":5387}}
+[2026-05-09T01:33:33.546Z][INFO] Minecraft exited: code=1 signal=null
+[2026-05-09T01:33:33.547Z][ERROR] Minecraft exit output (last 100 lines):
+[04:33:26] [ERROR] [FabricLoader/]: Uncaught exception in thread "main"
+net.fabricmc.loader.impl.util.ExceptionUtil$WrappedException: java.io.IOException: error reading C:\Users\kiril\AppData\Roaming\.fixlauncher\minecraft-fabric-26.1.2\libraries\net\fabricmc\intermediary\26.1.2\intermediary-26.1.2.jar
+	at net.fabricmc.loader.impl.util.ExceptionUtil.wrap(ExceptionUtil.java:51)
+	at net.fabricmc.loader.impl.game.minecraft.MinecraftGameProvider.locateGame(MinecraftGameProvider.java:260)
+	at net.fabricmc.loader.impl.launch.knot.Knot.createGameProvider(Knot.java:171)
+	at net.fabricmc.loader.impl.launch.knot.Knot.init(Knot.java:128)
+	at net.fabricmc.loader.impl.launch.knot.Knot.launch(Knot.java:66)
+	at net.fabricmc.loader.impl.launch.knot.KnotClient.main(KnotClient.java:23)
+Caused by: java.io.IOException: error reading C:\Users\kiril\AppData\Roaming\.fixlauncher\minecraft-fabric-26.1.2\libraries\net\fabricmc\intermediary\26.1.2\intermediary-26.1.2.jar
+	at net.fabricmc.loader.impl.game.LibClassifier.process(LibClassifier.java:215)
+	at net.fabricmc.loader.impl.game.LibClassifier.process(LibClassifier.java:162)
+	at net.fabricmc.loader.impl.game.minecraft.MinecraftGameProvider.locateGame(MinecraftGameProvider.java:209)
+	... 4 more
+Caused by: java.util.zip.ZipException: zip file is empty
+	at java.base/java.util.zip.ZipFile$Source.zerror(ZipFile.java:1831)
+	at java.base/java.util.zip.ZipFile$Source.findEND(ZipFile.java:1609)
+	at java.base/java.util.zip.ZipFile$Source.initCEN(ZipFile.java:1701)
+	at java.base/java.util.zip.ZipFile$Source.<init>(ZipFile.java:1542)
+	at java.base/java.util.zip.ZipFile$Source.get(ZipFile.java:1506)
+	at java.base/java.util.zip.ZipFile$CleanableResource.<init>(ZipFile.java:704)
+	at java.base/java.util.zip.ZipFile.<init>(ZipFile.java:204)
+	at java.base/java.util.zip.ZipFile.<init>(ZipFile.java:150)
+	at java.base/java.util.zip.ZipFile.<init>(ZipFile.java:164)
+	at net.fabricmc.loader.impl.game.LibClassifier.process(LibClassifier.java:202)
+	... 6 more
+
+[2026-05-09T01:33:35.684Z][INFO] Playtime saved: {"totalSeconds":255863,"sessionStart":null,"daily":{"2026-04-26":175,"2026-04-28":8121,"2026-04-29":4400,"2026-05-01":7752,"2026-05-02":9895,"2026-05-03":63789,"2026-05-04":15779,"2026-05-06":86196,"2026-05-07":20932,"2026-05-08":33427,"2026-05-09":5397}}
+[2026-05-09T01:33:35.685Z][INFO] Minecraft closed, reopening launcher
+[2026-05-09T01:33:35.686Z][INFO] Showing existing window
+[2026-05-09T01:33:39.817Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T01:33:39.836Z][INFO] Creating main window
+[2026-05-09T01:33:39.898Z][INFO] Main window created successfully
+[2026-05-09T01:33:39.912Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T01:33:40.338Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T01:33:40.376Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T01:33:40.560Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T01:33:40.562Z][INFO] No updates available.
+[2026-05-09T01:33:40.590Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T01:33:42.903Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T01:33:42.961Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T01:33:42.962Z][INFO] No updates available.
+[2026-05-09T01:33:49.297Z][INFO] Java OK (custom): 25 at C:\Users\kiril\AppData\Roaming\.fixlauncher\java\extracted\jdk-25.0.3+9\bin\java.exe
+[2026-05-09T01:33:49.303Z][INFO] Version already installed:
+[2026-05-09T01:33:54.198Z][INFO] mc:spawn — java: C:\Users\kiril\AppData\Roaming\.fixlauncher\java\extracted\jdk-25.0.3+9\bin\java.exe, args count: 44, cwd: C:\Users\kiril\AppData\Roaming\.fixlauncher\minecraft-fabric-26.1.2
+[2026-05-09T01:33:54.212Z][INFO] Minecraft spawned with PID: 7836
+[2026-05-09T01:33:54.216Z][INFO] Playtime saved: {"totalSeconds":255863,"sessionStart":1778290434214,"daily":{"2026-04-26":175,"2026-04-28":8121,"2026-04-29":4400,"2026-05-01":7752,"2026-05-02":9895,"2026-05-03":63789,"2026-05-04":15779,"2026-05-06":86196,"2026-05-07":20932,"2026-05-08":33427,"2026-05-09":5397}}
+[2026-05-09T01:34:00.633Z][INFO] Minecraft exited: code=1 signal=null
+[2026-05-09T01:34:00.634Z][ERROR] Minecraft exit output (last 100 lines):
+[04:33:54] [ERROR] [FabricLoader/]: Uncaught exception in thread "main"
+net.fabricmc.loader.impl.util.ExceptionUtil$WrappedException: java.io.IOException: error reading C:\Users\kiril\AppData\Roaming\.fixlauncher\minecraft-fabric-26.1.2\libraries\net\fabricmc\intermediary\26.1.2\intermediary-26.1.2.jar
+	at net.fabricmc.loader.impl.util.ExceptionUtil.wrap(ExceptionUtil.java:51)
+	at net.fabricmc.loader.impl.game.minecraft.MinecraftGameProvider.locateGame(MinecraftGameProvider.java:260)
+	at net.fabricmc.loader.impl.launch.knot.Knot.createGameProvider(Knot.java:171)
+	at net.fabricmc.loader.impl.launch.knot.Knot.init(Knot.java:128)
+	at net.fabricmc.loader.impl.launch.knot.Knot.launch(Knot.java:66)
+	at net.fabricmc.loader.impl.launch.knot.KnotClient.main(KnotClient.java:23)
+Caused by: java.io.IOException: error reading C:\Users\kiril\AppData\Roaming\.fixlauncher\minecraft-fabric-26.1.2\libraries\net\fabricmc\intermediary\26.1.2\intermediary-26.1.2.jar
+	at net.fabricmc.loader.impl.game.LibClassifier.process(LibClassifier.java:215)
+	at net.fabricmc.loader.impl.game.LibClassifier.process(LibClassifier.java:162)
+	at net.fabricmc.loader.impl.game.minecraft.MinecraftGameProvider.locateGame(MinecraftGameProvider.java:209)
+	... 4 more
+Caused by: java.util.zip.ZipException: zip file is empty
+	at java.base/java.util.zip.ZipFile$Source.zerror(ZipFile.java:1831)
+	at java.base/java.util.zip.ZipFile$Source.findEND(ZipFile.java:1609)
+	at java.base/java.util.zip.ZipFile$Source.initCEN(ZipFile.java:1701)
+	at java.base/java.util.zip.ZipFile$Source.<init>(ZipFile.java:1542)
+	at java.base/java.util.zip.ZipFile$Source.get(ZipFile.java:1506)
+	at java.base/java.util.zip.ZipFile$CleanableResource.<init>(ZipFile.java:704)
+	at java.base/java.util.zip.ZipFile.<init>(ZipFile.java:204)
+	at java.base/java.util.zip.ZipFile.<init>(ZipFile.java:150)
+	at java.base/java.util.zip.ZipFile.<init>(ZipFile.java:164)
+	at net.fabricmc.loader.impl.game.LibClassifier.process(LibClassifier.java:202)
+	... 6 more
+
+[2026-05-09T01:34:04.236Z][INFO] Playtime saved: {"totalSeconds":255873,"sessionStart":null,"daily":{"2026-04-26":175,"2026-04-28":8121,"2026-04-29":4400,"2026-05-01":7752,"2026-05-02":9895,"2026-05-03":63789,"2026-05-04":15779,"2026-05-06":86196,"2026-05-07":20932,"2026-05-08":33427,"2026-05-09":5407}}
+[2026-05-09T01:34:04.236Z][INFO] Minecraft closed, reopening launcher
+[2026-05-09T01:34:04.237Z][INFO] Showing existing window
+[2026-05-09T01:34:19.243Z][INFO] All windows closed
+[2026-05-09T01:34:19.244Z][INFO] App quitting
+[2026-05-09T01:35:06.286Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T01:35:06.307Z][INFO] Creating main window
+[2026-05-09T01:35:06.358Z][INFO] Main window created successfully
+[2026-05-09T01:35:06.369Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T01:35:06.900Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T01:35:07.046Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T01:35:07.070Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T01:35:07.414Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T01:35:07.415Z][INFO] No updates available.
+[2026-05-09T01:35:09.371Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T01:35:09.429Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T01:35:09.430Z][INFO] No updates available.
+[2026-05-09T01:35:12.136Z][INFO] Java OK (custom): 25 at C:\Users\kiril\AppData\Roaming\.fixlauncher\java\extracted\jdk-25.0.3+9\bin\java.exe
+[2026-05-09T01:35:12.143Z][INFO] Version already installed:
+[2026-05-09T01:35:13.501Z][INFO] mc:spawn — java: C:\Users\kiril\AppData\Roaming\.fixlauncher\java\extracted\jdk-25.0.3+9\bin\java.exe, args count: 44, cwd: C:\Users\kiril\AppData\Roaming\.fixlauncher\minecraft-fabric-26.1.2
+[2026-05-09T01:35:13.518Z][INFO] Minecraft spawned with PID: 8060
+[2026-05-09T01:35:13.522Z][INFO] Playtime saved: {"totalSeconds":255873,"sessionStart":1778290513521,"daily":{"2026-04-26":175,"2026-04-28":8121,"2026-04-29":4400,"2026-05-01":7752,"2026-05-02":9895,"2026-05-03":63789,"2026-05-04":15779,"2026-05-06":86196,"2026-05-07":20932,"2026-05-08":33427,"2026-05-09":5407}}
+[2026-05-09T01:35:21.564Z][INFO] Minecraft exited: code=1 signal=null
+[2026-05-09T01:35:21.565Z][ERROR] Minecraft exit output (last 100 lines):
+[04:35:14] [ERROR] [FabricLoader/]: Uncaught exception in thread "main"
+net.fabricmc.loader.impl.util.ExceptionUtil$WrappedException: java.io.IOException: error reading C:\Users\kiril\AppData\Roaming\.fixlauncher\minecraft-fabric-26.1.2\libraries\net\fabricmc\intermediary\26.1.2\intermediary-26.1.2.jar
+	at net.fabricmc.loader.impl.util.ExceptionUtil.wrap(ExceptionUtil.java:51)
+	at net.fabricmc.loader.impl.game.minecraft.MinecraftGameProvider.locateGame(MinecraftGameProvider.java:260)
+	at net.fabricmc.loader.impl.launch.knot.Knot.createGameProvider(Knot.java:171)
+	at net.fabricmc.loader.impl.launch.knot.Knot.init(Knot.java:128)
+	at net.fabricmc.loader.impl.launch.knot.Knot.launch(Knot.java:66)
+	at net.fabricmc.loader.impl.launch.knot.KnotClient.main(KnotClient.java:23)
+Caused by: java.io.IOException: error reading C:\Users\kiril\AppData\Roaming\.fixlauncher\minecraft-fabric-26.1.2\libraries\net\fabricmc\intermediary\26.1.2\intermediary-26.1.2.jar
+	at net.fabricmc.loader.impl.game.LibClassifier.process(LibClassifier.java:215)
+	at net.fabricmc.loader.impl.game.LibClassifier.process(LibClassifier.java:162)
+	at net.fabricmc.loader.impl.game.minecraft.MinecraftGameProvider.locateGame(MinecraftGameProvider.java:209)
+	... 4 more
+Caused by: java.util.zip.ZipException: zip file is empty
+	at java.base/java.util.zip.ZipFile$Source.zerror(ZipFile.java:1831)
+	at java.base/java.util.zip.ZipFile$Source.findEND(ZipFile.java:1609)
+	at java.base/java.util.zip.ZipFile$Source.initCEN(ZipFile.java:1701)
+	at java.base/java.util.zip.ZipFile$Source.<init>(ZipFile.java:1542)
+	at java.base/java.util.zip.ZipFile$Source.get(ZipFile.java:1506)
+	at java.base/java.util.zip.ZipFile$CleanableResource.<init>(ZipFile.java:704)
+	at java.base/java.util.zip.ZipFile.<init>(ZipFile.java:204)
+	at java.base/java.util.zip.ZipFile.<init>(ZipFile.java:150)
+	at java.base/java.util.zip.ZipFile.<init>(ZipFile.java:164)
+	at net.fabricmc.loader.impl.game.LibClassifier.process(LibClassifier.java:202)
+	... 6 more
+
+[2026-05-09T01:35:23.565Z][INFO] Playtime saved: {"totalSeconds":255883,"sessionStart":null,"daily":{"2026-04-26":175,"2026-04-28":8121,"2026-04-29":4400,"2026-05-01":7752,"2026-05-02":9895,"2026-05-03":63789,"2026-05-04":15779,"2026-05-06":86196,"2026-05-07":20932,"2026-05-08":33427,"2026-05-09":5417}}
+[2026-05-09T01:35:23.566Z][INFO] Minecraft closed, reopening launcher
+[2026-05-09T01:35:23.567Z][INFO] Showing existing window
+[2026-05-09T01:35:26.592Z][INFO] All windows closed
+[2026-05-09T01:35:26.593Z][INFO] App quitting
+[2026-05-09T01:36:06.103Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T01:36:06.126Z][INFO] Creating main window
+[2026-05-09T01:36:06.187Z][INFO] Main window created successfully
+[2026-05-09T01:36:06.199Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T01:36:06.688Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T01:36:06.839Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T01:36:06.866Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T01:36:07.215Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T01:36:07.216Z][INFO] No updates available.
+[2026-05-09T01:36:08.547Z][INFO] Java OK (custom): 25 at C:\Users\kiril\AppData\Roaming\.fixlauncher\java\extracted\jdk-25.0.3+9\bin\java.exe
+[2026-05-09T01:36:09.192Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T01:36:09.253Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T01:36:09.254Z][INFO] No updates available.
+[2026-05-09T01:40:37.411Z][INFO] downloadAssets: 4746 total, 4746 downloaded
+[2026-05-09T01:40:37.422Z][INFO] extractNatives: version=26.1.2, nativeCls=natives-windows, libraries=107
+[2026-05-09T01:40:37.424Z][INFO] extractNatives: legacy (classifiers) native libs found: 0
+[2026-05-09T01:40:37.428Z][INFO] extractNatives: modern (artifact) native libs found: 9
+[2026-05-09T01:40:37.430Z][INFO] extractNatives: total native libs to extract: 9
+[2026-05-09T01:40:37.434Z][INFO] extractNatives: [1/9] com/mojang/jtracy/1.0.37/jtracy-1.0.37-natives-windows.jar, exists=true
+[2026-05-09T01:40:37.462Z][INFO] extractNatives: extracted 1 files from jtracy-1.0.37-natives-windows.jar
+[2026-05-09T01:40:37.465Z][INFO] extractNatives: [2/9] org/lwjgl/lwjgl-freetype/3.4.1/lwjgl-freetype-3.4.1-natives-windows.jar, exists=true
+[2026-05-09T01:40:37.500Z][INFO] extractNatives: extracted 1 files from lwjgl-freetype-3.4.1-natives-windows.jar
+[2026-05-09T01:40:37.503Z][INFO] extractNatives: [3/9] org/lwjgl/lwjgl-glfw/3.4.1/lwjgl-glfw-3.4.1-natives-windows.jar, exists=true
+[2026-05-09T01:40:37.519Z][INFO] extractNatives: extracted 1 files from lwjgl-glfw-3.4.1-natives-windows.jar
+[2026-05-09T01:40:37.522Z][INFO] extractNatives: [4/9] org/lwjgl/lwjgl-jemalloc/3.4.1/lwjgl-jemalloc-3.4.1-natives-windows.jar, exists=true
+[2026-05-09T01:40:37.533Z][INFO] extractNatives: extracted 1 files from lwjgl-jemalloc-3.4.1-natives-windows.jar
+[2026-05-09T01:40:37.535Z][INFO] extractNatives: [5/9] org/lwjgl/lwjgl-openal/3.4.1/lwjgl-openal-3.4.1-natives-windows.jar, exists=true
+[2026-05-09T01:40:37.562Z][INFO] extractNatives: extracted 1 files from lwjgl-openal-3.4.1-natives-windows.jar
+[2026-05-09T01:40:37.564Z][INFO] extractNatives: [6/9] org/lwjgl/lwjgl-opengl/3.4.1/lwjgl-opengl-3.4.1-natives-windows.jar, exists=true
+[2026-05-09T01:40:37.575Z][INFO] extractNatives: extracted 1 files from lwjgl-opengl-3.4.1-natives-windows.jar
+[2026-05-09T01:40:37.582Z][INFO] extractNatives: [7/9] org/lwjgl/lwjgl-stb/3.4.1/lwjgl-stb-3.4.1-natives-windows.jar, exists=true
+[2026-05-09T01:40:37.600Z][INFO] extractNatives: extracted 1 files from lwjgl-stb-3.4.1-natives-windows.jar
+[2026-05-09T01:40:37.603Z][INFO] extractNatives: [8/9] org/lwjgl/lwjgl-tinyfd/3.4.1/lwjgl-tinyfd-3.4.1-natives-windows.jar, exists=true
+[2026-05-09T01:40:37.613Z][INFO] extractNatives: extracted 1 files from lwjgl-tinyfd-3.4.1-natives-windows.jar
+[2026-05-09T01:40:37.620Z][INFO] extractNatives: [9/9] org/lwjgl/lwjgl/3.4.1/lwjgl-3.4.1-natives-windows.jar, exists=true
+[2026-05-09T01:40:37.644Z][INFO] extractNatives: extracted 1 files from lwjgl-3.4.1-natives-windows.jar
+[2026-05-09T01:40:37.653Z][INFO] extractNatives: done. Files in natives (9): freetype.dll, glfw.dll, jemalloc.dll, jtracy-jni-windows.dll, lwjgl.dll, lwjgl_opengl.dll, lwjgl_stb.dll, lwjgl_tinyfd.dll, OpenAL.dll
+[2026-05-09T01:40:40.452Z][INFO] mc:spawn — java: C:\Users\kiril\AppData\Roaming\.fixlauncher\java\extracted\jdk-25.0.3+9\bin\java.exe, args count: 44, cwd: C:\Users\kiril\AppData\Roaming\.fixlauncher\minecraft-fabric-26.1.2
+[2026-05-09T01:40:40.467Z][INFO] Minecraft spawned with PID: 16256
+[2026-05-09T01:40:40.470Z][INFO] Playtime saved: {"totalSeconds":255883,"sessionStart":1778290840468,"daily":{"2026-04-26":175,"2026-04-28":8121,"2026-04-29":4400,"2026-05-01":7752,"2026-05-02":9895,"2026-05-03":63789,"2026-05-04":15779,"2026-05-06":86196,"2026-05-07":20932,"2026-05-08":33427,"2026-05-09":5417}}
+[2026-05-09T01:41:20.713Z][INFO] Playtime saved: {"totalSeconds":255923,"sessionStart":null,"daily":{"2026-04-26":175,"2026-04-28":8121,"2026-04-29":4400,"2026-05-01":7752,"2026-05-02":9895,"2026-05-03":63789,"2026-05-04":15779,"2026-05-06":86196,"2026-05-07":20932,"2026-05-08":33427,"2026-05-09":5457}}
+[2026-05-09T01:41:20.713Z][INFO] Minecraft closed, reopening launcher
+[2026-05-09T01:41:20.714Z][INFO] Showing existing window
+[2026-05-09T01:41:23.619Z][INFO] [screenshots] Found 0 screenshots across 1 root(s)
+[2026-05-09T01:41:24.071Z][INFO] Minecraft exited: code=0 signal=null
+[2026-05-09T01:41:28.421Z][INFO] All windows closed
+[2026-05-09T01:41:28.422Z][INFO] App quitting
+[2026-05-09T01:41:31.829Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T01:41:31.849Z][INFO] Creating main window
+[2026-05-09T01:41:31.911Z][INFO] Main window created successfully
+[2026-05-09T01:41:31.923Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T01:41:32.357Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T01:41:32.394Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T01:41:32.610Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T01:41:32.748Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T01:41:32.749Z][INFO] No updates available.
+[2026-05-09T01:41:34.928Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T01:41:34.987Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T01:41:34.988Z][INFO] No updates available.
+[2026-05-09T01:52:49.458Z][INFO] [screenshots] Found 0 screenshots across 1 root(s)
+[2026-05-09T01:53:50.301Z][INFO] All windows closed
+[2026-05-09T01:53:50.302Z][INFO] App quitting
+[2026-05-09T02:00:33.857Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T02:00:33.893Z][INFO] Creating main window
+[2026-05-09T02:00:33.958Z][INFO] Main window created successfully
+[2026-05-09T02:00:33.968Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T02:00:35.281Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T02:00:35.395Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:00:35.548Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T02:00:35.718Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:00:35.719Z][INFO] No updates available.
+[2026-05-09T02:00:36.973Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:00:37.029Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:00:37.030Z][INFO] No updates available.
+[2026-05-09T02:01:11.301Z][ERROR] microsoft:auth failed: Окно авторизации закрыто
+[2026-05-09T02:01:58.265Z][INFO] All windows closed
+[2026-05-09T02:01:58.266Z][INFO] App quitting
+[2026-05-09T02:07:15.052Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T02:07:15.071Z][INFO] Creating main window
+[2026-05-09T02:07:15.123Z][INFO] Main window created successfully
+[2026-05-09T02:07:15.137Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T02:07:15.591Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T02:07:15.744Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:07:15.850Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T02:07:16.096Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:07:16.097Z][INFO] No updates available.
+[2026-05-09T02:07:18.130Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:07:18.193Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:07:18.194Z][INFO] No updates available.
+[2026-05-09T02:07:55.767Z][INFO] All windows closed
+[2026-05-09T02:07:55.769Z][INFO] App quitting
+[2026-05-09T02:07:58.478Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T02:07:58.498Z][INFO] Creating main window
+[2026-05-09T02:07:58.552Z][INFO] Main window created successfully
+[2026-05-09T02:07:58.562Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T02:07:59.038Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T02:07:59.183Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T02:07:59.187Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:07:59.524Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:07:59.526Z][INFO] No updates available.
+[2026-05-09T02:08:01.560Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:08:01.620Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:08:01.621Z][INFO] No updates available.
+[2026-05-09T02:08:12.161Z][INFO] All windows closed
+[2026-05-09T02:08:12.162Z][INFO] App quitting
+[2026-05-09T02:12:01.816Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T02:12:01.839Z][INFO] Creating main window
+[2026-05-09T02:12:01.905Z][INFO] Main window created successfully
+[2026-05-09T02:12:01.918Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T02:12:02.518Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:12:02.895Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:12:02.898Z][INFO] No updates available.
+[2026-05-09T02:12:04.908Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:12:04.974Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:12:04.975Z][INFO] No updates available.
+[2026-05-09T02:12:11.622Z][INFO] All windows closed
+[2026-05-09T02:12:11.623Z][INFO] App quitting
+[2026-05-09T02:12:57.749Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T02:12:57.767Z][INFO] Creating main window
+[2026-05-09T02:12:57.830Z][INFO] Main window created successfully
+[2026-05-09T02:12:57.840Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T02:12:58.372Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:12:58.764Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:12:58.765Z][INFO] No updates available.
+[2026-05-09T02:13:00.832Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:13:00.890Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:13:00.890Z][INFO] No updates available.
+[2026-05-09T02:13:05.733Z][INFO] All windows closed
+[2026-05-09T02:13:05.734Z][INFO] App quitting
+[2026-05-09T02:15:13.452Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T02:15:13.477Z][INFO] Creating main window
+[2026-05-09T02:15:13.551Z][INFO] Main window created successfully
+[2026-05-09T02:15:13.569Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T02:15:14.099Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T02:15:14.146Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:15:14.413Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T02:15:14.488Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:15:14.490Z][INFO] No updates available.
+[2026-05-09T02:15:16.561Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:15:16.619Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:15:16.620Z][INFO] No updates available.
+[2026-05-09T02:15:57.348Z][INFO] All windows closed
+[2026-05-09T02:15:57.349Z][INFO] App quitting
+[2026-05-09T02:20:44.468Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T02:20:44.490Z][INFO] Creating main window
+[2026-05-09T02:20:44.543Z][INFO] Main window created successfully
+[2026-05-09T02:20:44.555Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T02:20:45.042Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T02:20:45.089Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:20:45.301Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T02:20:45.430Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:20:45.431Z][INFO] No updates available.
+[2026-05-09T02:20:47.554Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:20:47.611Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:20:47.612Z][INFO] No updates available.
+[2026-05-09T02:21:28.736Z][INFO] All windows closed
+[2026-05-09T02:21:28.737Z][INFO] App quitting
+[2026-05-09T02:23:29.047Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T02:23:29.068Z][INFO] Creating main window
+[2026-05-09T02:23:29.141Z][INFO] Main window created successfully
+[2026-05-09T02:23:29.156Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T02:23:29.703Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T02:23:29.750Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:23:29.849Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T02:23:30.085Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:23:30.086Z][INFO] No updates available.
+[2026-05-09T02:23:32.149Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:23:32.207Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:23:32.208Z][INFO] No updates available.
+[2026-05-09T02:25:54.350Z][ERROR] microsoft:auth failed: Окно авторизации закрыто
+[2026-05-09T02:26:27.715Z][ERROR] microsoft:auth failed: Окно авторизации закрыто
+[2026-05-09T02:26:29.300Z][INFO] All windows closed
+[2026-05-09T02:26:29.301Z][INFO] App quitting
+[2026-05-09T02:30:10.633Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T02:30:10.651Z][INFO] Creating main window
+[2026-05-09T02:30:10.715Z][INFO] Main window created successfully
+[2026-05-09T02:30:10.727Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T02:30:11.248Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T02:30:11.390Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:30:11.526Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T02:30:11.757Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:30:11.758Z][INFO] No updates available.
+[2026-05-09T02:30:13.718Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:30:13.783Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:30:13.784Z][INFO] No updates available.
+[2026-05-09T02:30:36.506Z][INFO] microsoft:auth — got redirect to https://login.live.com/oauth20_desktop.srf
+[2026-05-09T02:30:38.332Z][INFO] microsoft:auth — got redirect to https://login.live.com/oauth20_desktop.srf
+[2026-05-09T02:30:38.333Z][ERROR] microsoft:auth failed: Ошибка авторизации: server_error
+[2026-05-09T02:31:17.463Z][INFO] microsoft:auth — got redirect to https://login.live.com/oauth20_desktop.srf
+[2026-05-09T02:31:19.045Z][INFO] microsoft:auth — got redirect to https://login.live.com/oauth20_desktop.srf
+[2026-05-09T02:31:19.572Z][ERROR] microsoft:auth failed: Не удалось получить профиль Minecraft
+[2026-05-09T02:31:56.601Z][INFO] [screenshots] Found 0 screenshots across 1 root(s)
+[2026-05-09T02:32:08.626Z][INFO] All windows closed
+[2026-05-09T02:32:08.628Z][INFO] App quitting
+[2026-05-09T02:34:36.068Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T02:34:36.090Z][INFO] Creating main window
+[2026-05-09T02:34:36.156Z][INFO] Main window created successfully
+[2026-05-09T02:34:36.170Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T02:34:36.783Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T02:34:36.917Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:34:36.934Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T02:34:37.270Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:34:37.272Z][INFO] No updates available.
+[2026-05-09T02:34:39.163Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:34:39.225Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:34:39.227Z][INFO] No updates available.
+[2026-05-09T02:35:03.756Z][INFO] microsoft:auth — got redirect to https://login.live.com/oauth20_desktop.srf
+[2026-05-09T02:35:05.572Z][ERROR] microsoft:auth failed: Не удалось получить профиль Minecraft
+[2026-05-09T02:35:12.975Z][INFO] All windows closed
+[2026-05-09T02:35:12.977Z][INFO] App quitting
+[2026-05-09T02:36:09.084Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T02:36:09.108Z][INFO] Creating main window
+[2026-05-09T02:36:09.180Z][INFO] Main window created successfully
+[2026-05-09T02:36:09.195Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T02:36:09.791Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T02:36:09.914Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:36:10.070Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T02:36:10.259Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:36:10.261Z][INFO] No updates available.
+[2026-05-09T02:36:12.191Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:36:12.253Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:36:12.255Z][INFO] No updates available.
+[2026-05-09T02:36:24.968Z][INFO] microsoft:auth — got redirect to https://login.live.com/oauth20_desktop.srf
+[2026-05-09T02:36:27.006Z][WARN] microsoft:auth — profile endpoint status=404, error=NOT_FOUND
+[2026-05-09T02:36:27.007Z][ERROR] microsoft:auth failed: Профиль Minecraft не найден (404): NOT_FOUND
+[2026-05-09T02:37:07.946Z][INFO] microsoft:auth — got redirect to https://login.live.com/oauth20_desktop.srf
+[2026-05-09T02:37:07.949Z][ERROR] microsoft:auth failed: Вход отменён
+[2026-05-09T02:37:35.700Z][INFO] microsoft:auth — got redirect to https://login.live.com/oauth20_desktop.srf
+[2026-05-09T02:37:35.702Z][ERROR] microsoft:auth failed: Вход отменён
+[2026-05-09T02:37:43.600Z][ERROR] microsoft:auth failed: Окно авторизации закрыто
+[2026-05-09T02:37:45.005Z][INFO] All windows closed
+[2026-05-09T02:37:45.007Z][INFO] App quitting
+[2026-05-09T02:38:35.650Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T02:38:35.671Z][INFO] Creating main window
+[2026-05-09T02:38:35.746Z][INFO] Main window created successfully
+[2026-05-09T02:38:35.761Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T02:38:36.339Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T02:38:36.405Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:38:36.492Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T02:38:36.752Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:38:36.753Z][INFO] No updates available.
+[2026-05-09T02:38:38.755Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:38:38.817Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:38:38.818Z][INFO] No updates available.
+[2026-05-09T02:39:17.188Z][ERROR] microsoft:auth failed: Окно авторизации закрыто
+[2026-05-09T02:39:18.850Z][INFO] All windows closed
+[2026-05-09T02:39:18.851Z][INFO] App quitting
+[2026-05-09T02:39:33.731Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T02:39:33.749Z][INFO] Creating main window
+[2026-05-09T02:39:33.801Z][INFO] Main window created successfully
+[2026-05-09T02:39:33.813Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T02:39:34.287Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T02:39:34.342Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:39:34.437Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T02:39:34.711Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:39:34.712Z][INFO] No updates available.
+[2026-05-09T02:39:36.815Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:39:36.878Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:39:36.880Z][INFO] No updates available.
+[2026-05-09T02:40:08.282Z][ERROR] microsoft:auth failed: Окно авторизации закрыто
+[2026-05-09T02:40:18.707Z][INFO] All windows closed
+[2026-05-09T02:40:18.708Z][INFO] App quitting
+[2026-05-09T02:40:23.687Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T02:40:23.706Z][INFO] Creating main window
+[2026-05-09T02:40:23.771Z][INFO] Main window created successfully
+[2026-05-09T02:40:23.785Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T02:40:24.348Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T02:40:24.485Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:40:24.510Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T02:40:24.833Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:40:24.834Z][INFO] No updates available.
+[2026-05-09T02:40:26.774Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:40:26.834Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:40:26.836Z][INFO] No updates available.
+[2026-05-09T02:40:59.253Z][ERROR] microsoft:auth failed: Окно авторизации закрыто
+[2026-05-09T02:41:00.223Z][INFO] All windows closed
+[2026-05-09T02:41:00.225Z][INFO] App quitting
+[2026-05-09T02:45:09.428Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T02:45:09.476Z][INFO] Creating main window
+[2026-05-09T02:45:09.587Z][INFO] Main window created successfully
+[2026-05-09T02:45:09.598Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T02:45:11.135Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T02:45:11.238Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:45:11.385Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T02:45:11.604Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:45:11.606Z][INFO] No updates available.
+[2026-05-09T02:45:12.597Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:45:12.660Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:45:12.662Z][INFO] No updates available.
+[2026-05-09T02:45:58.589Z][ERROR] microsoft:auth failed: Окно авторизации закрыто
+[2026-05-09T02:47:00.536Z][ERROR] microsoft:auth failed: Окно авторизации закрыто
+[2026-05-09T02:47:02.097Z][INFO] All windows closed
+[2026-05-09T02:47:02.098Z][INFO] App quitting
+[2026-05-09T02:51:41.308Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T02:51:41.326Z][INFO] Creating main window
+[2026-05-09T02:51:41.390Z][INFO] Main window created successfully
+[2026-05-09T02:51:41.401Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T02:51:41.918Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T02:51:42.037Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:51:42.184Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T02:51:42.369Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:51:42.370Z][INFO] No updates available.
+[2026-05-09T02:51:44.398Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:51:44.458Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:51:44.461Z][INFO] No updates available.
+[2026-05-09T02:52:07.130Z][INFO] All windows closed
+[2026-05-09T02:52:07.131Z][INFO] App quitting
+[2026-05-09T02:57:36.714Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T02:57:36.736Z][INFO] Creating main window
+[2026-05-09T02:57:36.801Z][INFO] Main window created successfully
+[2026-05-09T02:57:36.815Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T02:57:37.409Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T02:57:37.544Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:57:37.683Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T02:57:37.892Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:57:37.893Z][INFO] No updates available.
+[2026-05-09T02:57:39.808Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:57:39.870Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:57:39.871Z][INFO] No updates available.
+[2026-05-09T02:58:09.150Z][INFO] All windows closed
+[2026-05-09T02:58:09.151Z][INFO] App quitting
+[2026-05-09T02:58:53.647Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T02:58:53.667Z][INFO] Creating main window
+[2026-05-09T02:58:53.737Z][INFO] Main window created successfully
+[2026-05-09T02:58:53.751Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T02:58:54.285Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T02:58:54.328Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:58:54.421Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T02:58:54.680Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:58:54.681Z][INFO] No updates available.
+[2026-05-09T02:58:56.749Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T02:58:56.808Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T02:58:56.809Z][INFO] No updates available.
+[2026-05-09T03:02:04.812Z][INFO] All windows closed
+[2026-05-09T03:02:04.814Z][INFO] App quitting
+[2026-05-09T03:02:09.551Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T03:02:09.572Z][INFO] Creating main window
+[2026-05-09T03:02:09.649Z][INFO] Main window created successfully
+[2026-05-09T03:02:09.663Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T03:02:10.269Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T03:02:10.406Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T03:02:10.441Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T03:02:10.753Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T03:02:10.754Z][INFO] No updates available.
+[2026-05-09T03:02:12.662Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T03:02:12.720Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T03:02:12.722Z][INFO] No updates available.
+[2026-05-09T03:04:17.879Z][INFO] microsoft:auth — обмениваем code на токен...
+[2026-05-09T03:04:18.198Z][INFO] microsoft:auth — получен access_token, продолжаем Xbox Live...
+[2026-05-09T03:04:20.940Z][INFO] microsoft:auth — успешно: Shampusik (b66b4a9e65d84081b9ca000e3784bab1)
+[2026-05-09T03:04:33.541Z][INFO] All windows closed
+[2026-05-09T03:04:33.544Z][INFO] App quitting
+[2026-05-09T03:07:34.256Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T03:07:34.282Z][INFO] Creating main window
+[2026-05-09T03:07:34.350Z][INFO] Main window created successfully
+[2026-05-09T03:07:34.362Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T03:07:34.982Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T03:07:35.118Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T03:07:35.251Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T03:07:35.493Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T03:07:35.494Z][INFO] No updates available.
+[2026-05-09T03:07:37.359Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T03:07:37.425Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T03:07:37.426Z][INFO] No updates available.
+[2026-05-09T03:08:29.310Z][ERROR] microsoft:auth failed: Окно авторизации закрыто
+[2026-05-09T03:08:33.161Z][INFO] All windows closed
+[2026-05-09T03:08:33.162Z][INFO] App quitting
+[2026-05-09T03:14:43.854Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T03:14:43.872Z][INFO] Creating main window
+[2026-05-09T03:14:43.925Z][INFO] Main window created successfully
+[2026-05-09T03:14:43.937Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T03:14:44.463Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T03:14:44.511Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T03:14:44.724Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T03:14:44.851Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T03:14:44.852Z][INFO] No updates available.
+[2026-05-09T03:14:46.930Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T03:14:46.990Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T03:14:46.991Z][INFO] No updates available.
+[2026-05-09T03:14:47.547Z][INFO] microsoft:auth — открываем браузер, redirect_uri=http://127.0.0.1:64335/callback
+[2026-05-09T03:15:00.539Z][INFO] All windows closed
+[2026-05-09T03:15:00.540Z][INFO] App quitting
+[2026-05-09T10:16:55.600Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T10:16:55.618Z][INFO] Creating main window
+[2026-05-09T10:16:55.667Z][INFO] Main window created successfully
+[2026-05-09T10:16:55.675Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T10:16:56.208Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T10:16:56.317Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T10:16:56.673Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T10:16:57.017Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T10:16:57.018Z][INFO] No updates available.
+[2026-05-09T10:16:58.670Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T10:16:58.732Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T10:16:58.733Z][INFO] No updates available.
+[2026-05-09T10:17:02.267Z][ERROR] microsoft:auth exception: crypto.createECDH is not a function
+[2026-05-09T10:17:08.317Z][ERROR] microsoft:auth exception: crypto.createECDH is not a function
+[2026-05-09T10:17:52.076Z][INFO] All windows closed
+[2026-05-09T10:17:52.077Z][INFO] App quitting
+[2026-05-09T10:53:08.273Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T10:53:08.311Z][INFO] Creating main window
+[2026-05-09T10:53:08.368Z][INFO] Main window created successfully
+[2026-05-09T10:53:08.378Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T10:53:09.618Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T10:53:09.704Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T10:53:10.453Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T10:53:10.544Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T10:53:10.545Z][INFO] No updates available.
+[2026-05-09T10:53:11.376Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T10:53:11.432Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T10:53:11.433Z][INFO] No updates available.
+[2026-05-09T10:53:13.123Z][INFO] microsoft:auth — получаем device token...
+[2026-05-09T10:53:19.384Z][INFO] microsoft:auth — получаем device token...
+[2026-05-09T10:53:25.495Z][INFO] microsoft:auth — получаем device token...
+[2026-05-09T10:53:49.617Z][INFO] All windows closed
+[2026-05-09T10:53:49.618Z][INFO] App quitting
+[2026-05-09T10:57:03.521Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T10:57:03.536Z][INFO] Creating main window
+[2026-05-09T10:57:03.581Z][INFO] Main window created successfully
+[2026-05-09T10:57:03.589Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T10:57:04.028Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T10:57:04.079Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T10:57:04.422Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T10:57:04.622Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T10:57:04.623Z][INFO] No updates available.
+[2026-05-09T10:57:06.598Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T10:57:06.657Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T10:57:06.658Z][INFO] No updates available.
+[2026-05-09T10:57:08.270Z][INFO] microsoft:auth — получаем device token...
+[2026-05-09T10:57:16.915Z][INFO] microsoft:auth — получаем device token...
+[2026-05-09T10:57:19.613Z][INFO] All windows closed
+[2026-05-09T10:57:19.613Z][INFO] App quitting
+[2026-05-09T11:11:22.093Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T11:11:22.111Z][INFO] Creating main window
+[2026-05-09T11:11:22.170Z][INFO] Main window created successfully
+[2026-05-09T11:11:22.182Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T11:11:22.632Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T11:11:22.680Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T11:11:23.191Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T11:11:23.254Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T11:11:23.255Z][INFO] No updates available.
+[2026-05-09T11:11:25.186Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T11:11:25.242Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T11:11:25.243Z][INFO] No updates available.
+[2026-05-09T11:11:26.546Z][INFO] microsoft:auth — получаем device token...
+[2026-05-09T11:11:27.305Z][ERROR] microsoft:auth — device token error: 
+[2026-05-09T11:11:29.557Z][INFO] All windows closed
+[2026-05-09T11:11:29.558Z][INFO] App quitting
+[2026-05-09T11:16:04.819Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T11:16:04.838Z][INFO] Creating main window
+[2026-05-09T11:16:04.899Z][INFO] Main window created successfully
+[2026-05-09T11:16:04.912Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T11:16:05.520Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T11:16:05.575Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T11:16:06.000Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T11:16:06.202Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T11:16:06.204Z][INFO] No updates available.
+[2026-05-09T11:16:07.905Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T11:16:07.965Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T11:16:07.966Z][INFO] No updates available.
+[2026-05-09T11:16:08.785Z][INFO] microsoft:auth — получаем device token...
+[2026-05-09T11:16:09.547Z][ERROR] microsoft:auth — device token error: 
+[2026-05-09T11:16:11.816Z][INFO] All windows closed
+[2026-05-09T11:16:11.816Z][INFO] App quitting
+[2026-05-09T11:19:46.195Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T11:19:46.212Z][INFO] Creating main window
+[2026-05-09T11:19:46.268Z][INFO] Main window created successfully
+[2026-05-09T11:19:46.278Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T11:19:46.763Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T11:19:46.874Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T11:19:47.208Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T11:19:47.484Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T11:19:47.485Z][INFO] No updates available.
+[2026-05-09T11:19:49.280Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T11:19:49.339Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T11:19:49.340Z][INFO] No updates available.
+[2026-05-09T11:19:52.215Z][INFO] microsoft:auth — получаем device token...
+[2026-05-09T11:19:53.035Z][INFO] microsoft:auth — device token получен
+[2026-05-09T11:19:53.037Z][INFO] microsoft:auth — SISU authenticate...
+[2026-05-09T11:19:53.309Z][INFO] microsoft:auth — получен URL для браузера
+[2026-05-09T11:20:23.722Z][INFO] microsoft:auth — получен код, обмениваем...
+[2026-05-09T11:20:24.129Z][INFO] microsoft:auth — OAuth token получен
+[2026-05-09T11:20:24.130Z][INFO] microsoft:auth — SISU authorize...
+[2026-05-09T11:20:24.552Z][INFO] microsoft:auth — SISU authorize успешно
+[2026-05-09T11:20:24.553Z][INFO] microsoft:auth — XSTS authorize...
+[2026-05-09T11:20:25.335Z][INFO] microsoft:auth — XSTS успешно
+[2026-05-09T11:20:25.337Z][INFO] microsoft:auth — Minecraft token...
+[2026-05-09T11:20:25.698Z][INFO] microsoft:auth — Minecraft token получен
+[2026-05-09T11:20:26.223Z][INFO] microsoft:auth — entitlements ok
+[2026-05-09T11:20:26.366Z][INFO] microsoft:auth — успешно: Shampusik (b66b4a9e65d84081b9ca000e3784bab1)
+[2026-05-09T11:20:36.752Z][INFO] microsoft:auth — получаем device token...
+[2026-05-09T11:20:37.576Z][INFO] microsoft:auth — device token получен
+[2026-05-09T11:20:37.578Z][INFO] microsoft:auth — SISU authenticate...
+[2026-05-09T11:20:37.805Z][INFO] microsoft:auth — получен URL для браузера
+[2026-05-09T11:21:07.803Z][INFO] microsoft:auth — получен код, обмениваем...
+[2026-05-09T11:21:08.194Z][INFO] microsoft:auth — OAuth token получен
+[2026-05-09T11:21:08.195Z][INFO] microsoft:auth — SISU authorize...
+[2026-05-09T11:21:08.601Z][INFO] microsoft:auth — SISU authorize успешно
+[2026-05-09T11:21:08.602Z][INFO] microsoft:auth — XSTS authorize...
+[2026-05-09T11:21:09.471Z][INFO] microsoft:auth — XSTS успешно
+[2026-05-09T11:21:09.472Z][INFO] microsoft:auth — Minecraft token...
+[2026-05-09T11:21:09.817Z][INFO] microsoft:auth — Minecraft token получен
+[2026-05-09T11:21:10.336Z][INFO] microsoft:auth — entitlements ok
+[2026-05-09T11:21:10.485Z][INFO] microsoft:auth — успешно: fixsirt228 (fdc82ae32f0845858afbb08420659124)
+[2026-05-09T11:21:40.345Z][INFO] [screenshots] Found 0 screenshots across 1 root(s)
+[2026-05-09T11:21:42.405Z][INFO] All windows closed
+[2026-05-09T11:21:42.406Z][INFO] App quitting
+[2026-05-09T11:22:34.663Z][INFO] App ready [PLAYTIME-BUILD v3]
+[2026-05-09T11:22:34.678Z][INFO] Creating main window
+[2026-05-09T11:22:34.727Z][INFO] Main window created successfully
+[2026-05-09T11:22:34.737Z][INFO] [Yggdrasil] Mock auth server started on http://127.0.0.1:25567/ (RSA-4096 signing enabled)
+[2026-05-09T11:22:35.240Z][INFO] Fetching NEWS.md from GitHub
+[2026-05-09T11:22:35.362Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T11:22:35.614Z][INFO] Parsed 7 news items from NEWS.md
+[2026-05-09T11:22:35.907Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T11:22:35.908Z][INFO] No updates available.
+[2026-05-09T11:22:37.734Z][INFO] Checking for updates. Current version: 2.1.1
+[2026-05-09T11:22:37.805Z][INFO] Latest version on GitHub: 2.1.1
+[2026-05-09T11:22:37.805Z][INFO] No updates available.
+[2026-05-09T11:23:12.348Z][INFO] Java OK (custom): 25 at C:\Users\kiril\AppData\Roaming\.fixlauncher\java\extracted\jdk-25.0.3+9\bin\java.exe
+[2026-05-09T11:23:12.414Z][INFO] Version already installed:
+[2026-05-09T11:23:14.106Z][INFO] mc:spawn — java: C:\Users\kiril\AppData\Roaming\.fixlauncher\java\extracted\jdk-25.0.3+9\bin\java.exe, args count: 44, cwd: C:\Users\kiril\AppData\Roaming\.fixlauncher\minecraft-fabric-1.21.11
+[2026-05-09T11:23:14.122Z][INFO] Minecraft spawned with PID: 1680
+[2026-05-09T11:23:14.125Z][INFO] Playtime saved: {"totalSeconds":256664,"sessionStart":1778325794124,"daily":{"2026-04-26":175,"2026-04-28":8121,"2026-04-29":4400,"2026-05-01":7752,"2026-05-02":9895,"2026-05-03":63789,"2026-05-04":15779,"2026-05-06":86196,"2026-05-07":20932,"2026-05-08":33427,"2026-05-09":6198}}
+[2026-05-09T11:28:59.567Z][INFO] Minecraft exited: code=0 signal=null
+[2026-05-09T11:28:59.661Z][INFO] Playtime saved: {"totalSeconds":257009,"sessionStart":null,"daily":{"2026-04-26":175,"2026-04-28":8121,"2026-04-29":4400,"2026-05-01":7752,"2026-05-02":9895,"2026-05-03":63789,"2026-05-04":15779,"2026-05-06":86196,"2026-05-07":20932,"2026-05-08":33427,"2026-05-09":6543}}
+[2026-05-09T11:28:59.661Z][INFO] Minecraft closed, reopening launcher
+[2026-05-09T11:28:59.662Z][INFO] Showing existing window
+[2026-05-09T11:29:43.692Z][INFO] All windows closed
+[2026-05-09T11:29:43.694Z][INFO] App quitting

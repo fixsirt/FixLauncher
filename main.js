@@ -1144,17 +1144,18 @@ async function _javaCheckVersion(javaPath) {
 }
 
 /**
- * Скачивает и распаковывает Java 21 (только Windows x64).
+ * Скачивает и распаковывает Java (только Windows x64).
+ * @param {number} requiredVersion — требуемая мажорная версия Java (по умолчанию 21)
  * Отправляет прогресс через event.sender.send('java:progress', {pct, msg}).
  */
-async function _javaDownloadAndInstall(event, minecraftPath) {
+async function _javaDownloadAndInstall(event, minecraftPath, requiredVersion = 21) {
     if (process.platform !== 'win32') throw new Error('Автоматическая загрузка Java поддерживается только для Windows');
 
     const send = (pct, msg) => {
         try { event.sender.send('java:progress', { pct, msg }); } catch { /* window closed */ }
     };
 
-    send(5, 'Получение информации о Java 21...');
+    send(5, `Получение информации о Java ${requiredVersion}...`);
     const https = require('https');
     const AdmZip = require('adm-zip');
 
@@ -1166,18 +1167,19 @@ async function _javaDownloadAndInstall(event, minecraftPath) {
         }).on('error', reject);
     });
 
-    const assets = await fetchJSON('https://api.adoptium.net/v3/assets/latest/21/hotspot?os=windows&architecture=x64&image_type=jdk&vendor=eclipse');
-    if (!assets?.length) throw new Error('Не удалось получить информацию о Java');
+    const adoptiumUrl = `https://api.adoptium.net/v3/assets/latest/${requiredVersion}/hotspot?os=windows&architecture=x64&image_type=jdk&vendor=eclipse`;
+    const assets = await fetchJSON(adoptiumUrl);
+    if (!assets?.length) throw new Error(`Не удалось получить информацию о Java ${requiredVersion}`);
     const asset = assets.find(a => a.binary?.os === 'windows' && a.binary?.architecture === 'x64' && a.binary?.image_type === 'jdk');
-    if (!asset?.binary?.package) throw new Error('Не найдена подходящая версия Java для Windows');
+    if (!asset?.binary?.package) throw new Error(`Не найдена подходящая версия Java ${requiredVersion} для Windows`);
 
     const { link: downloadUrl, size } = asset.binary.package;
     const javaDir         = path.join(minecraftPath, 'java');
-    const javaZipPath     = path.join(javaDir, 'java21.zip');
+    const javaZipPath     = path.join(javaDir, `java${requiredVersion}.zip`);
     const javaExtractPath = path.join(javaDir, 'extracted');
     fs.mkdirSync(javaDir, { recursive: true });
 
-    send(10, `Загрузка Java 21 (${Math.floor(size / 1048576)}MB)...`);
+    send(10, `Загрузка Java ${requiredVersion} (${Math.floor(size / 1048576)}MB)...`);
     log('INFO', 'Downloading Java from:', downloadUrl);
 
     await new Promise((resolve, reject) => {
@@ -1204,7 +1206,7 @@ async function _javaDownloadAndInstall(event, minecraftPath) {
         doGet(downloadUrl);
     });
 
-    send(75, 'Распаковка Java 21...');
+    send(75, `Распаковка Java ${requiredVersion}...`);
     const zip = new AdmZip(javaZipPath);
     zip.extractAllTo(javaExtractPath, true);
 
@@ -1218,39 +1220,40 @@ async function _javaDownloadAndInstall(event, minecraftPath) {
 
     send(95, 'Проверка установленной Java...');
     const version = await _javaCheckVersion(javaBinPath);
-    if (!version || version < 21) throw new Error(`Установлена Java ${version}, требуется 21+`);
+    if (!version || version < requiredVersion) throw new Error(`Установлена Java ${version}, требуется ${requiredVersion}+`);
 
-    log('INFO', 'Java 21 installed:', javaBinPath);
-    send(100, 'Java 21 установлена!');
+    log('INFO', `Java ${requiredVersion} installed:`, javaBinPath);
+    send(100, `Java ${requiredVersion} установлена!`);
     return javaBinPath;
 }
 
-ipcMain.handle('java:ensure', async (event, { minecraftPath, currentJavaPath }) => {
+ipcMain.handle('java:ensure', async (event, { minecraftPath, currentJavaPath, requiredVersion }) => {
+    const reqVer = requiredVersion || 21;
     try {
         // 1. Проверяем указанный пользователем путь
         if (currentJavaPath && currentJavaPath !== 'java') {
             if (fs.existsSync(currentJavaPath)) {
                 const version = await _javaCheckVersion(currentJavaPath);
-                if (version && version >= 21) {
+                if (version && version >= reqVer) {
                     log('INFO', `Java OK (custom): ${version} at ${currentJavaPath}`);
                     return { ok: true, javaPath: currentJavaPath };
                 }
-                log('INFO', `Java too old (${version}) at ${currentJavaPath}, downloading 21...`);
+                log('INFO', `Java too old (${version}) at ${currentJavaPath}, downloading ${reqVer}...`);
             } else {
                 log('INFO', 'Java not found at specified path, downloading...');
             }
-            const javaPath = await _javaDownloadAndInstall(event, minecraftPath);
+            const javaPath = await _javaDownloadAndInstall(event, minecraftPath, reqVer);
             return { ok: true, javaPath };
         }
 
         // 2. Системная Java
         const sysVersion = await _javaCheckVersion('java');
-        if (sysVersion && sysVersion >= 21) {
+        if (sysVersion && sysVersion >= reqVer) {
             log('INFO', `System Java OK: ${sysVersion}`);
             return { ok: true, javaPath: 'java' };
         }
-        log('INFO', sysVersion ? `System Java too old (${sysVersion}), downloading...` : 'System Java not found, downloading...');
-        const javaPath = await _javaDownloadAndInstall(event, minecraftPath);
+        log('INFO', sysVersion ? `System Java too old (${sysVersion}), downloading ${reqVer}...` : 'System Java not found, downloading...');
+        const javaPath = await _javaDownloadAndInstall(event, minecraftPath, reqVer);
         return { ok: true, javaPath };
     } catch (e) {
         log('ERROR', 'java:ensure failed:', e.message);
@@ -1295,17 +1298,37 @@ ipcMain.handle('java:ensure', async (event, { minecraftPath, currentJavaPath }) 
             const doGet = (u) => {
                 const lib = u.startsWith('https') ? https : http;
                 lib.get(u, { headers: { 'User-Agent': 'FixLauncher/1.0' } }, res => {
-                    if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location)
-                        return doGet(res.headers.location);
+                    if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                        try {
+                            const resolved = new URL(res.headers.location, u).toString();
+                            return doGet(resolved);
+                        } catch (e) {
+                            file.close(); try { fs.unlinkSync(dest); } catch {}
+                            return reject(new Error(`Invalid redirect URL: ${res.headers.location}`));
+                        }
+                    }
                     if (res.statusCode !== 200) { file.close(); fs.unlinkSync(dest); return reject(new Error(`HTTP ${res.statusCode}: ${u}`)); }
                     const total = parseInt(res.headers['content-length'] || '0');
                     let downloaded = 0;
                     res.on('data', chunk => { downloaded += chunk.length; file.write(chunk); onProgress && onProgress(downloaded, total); });
-                    res.on('end', () => { file.end(); });
+                    res.on('end', () => { file.close(); });
                     res.on('error', (e) => { file.close(); try { fs.unlinkSync(dest); } catch {} reject(e); });
                 }).on('error', (e) => { file.close(); try { fs.unlinkSync(dest); } catch {} reject(e); });
             };
-            file.on('finish', resolve);
+            file.on('finish', () => {
+                // Проверяем, что файл не пустой
+                try {
+                    const stat = fs.statSync(dest);
+                    if (stat.size === 0) {
+                        try { fs.unlinkSync(dest); } catch {}
+                        return reject(new Error(`Downloaded file is empty: ${url}`));
+                    }
+                } catch (e) {
+                    try { fs.unlinkSync(dest); } catch {}
+                    return reject(e);
+                }
+                resolve();
+            });
             file.on('error', (e) => { try { fs.unlinkSync(dest); } catch {} reject(e); });
             doGet(url);
         });
@@ -1749,18 +1772,24 @@ ipcMain.handle('java:ensure', async (event, { minecraftPath, currentJavaPath }) 
     async function installFabricVersion(event, minecraftPath, version) {
         const mcVersion = version.replace(/-(fabric|forge|neoforge|quilt).*$/i, '') || '1.21.4';
 
+        // Проверяем, поддерживает ли Fabric эту версию MC
+        send(event, 18, 'Проверка поддержки Fabric...');
+        let fabricLoaderVersion = null;
+        try {
+            const versions = await fetchJSON(`https://meta.fabricmc.net/v2/versions/loader/${mcVersion}`);
+            if (versions && Array.isArray(versions) && versions.length > 0) {
+                fabricLoaderVersion = versions[0]?.loader?.version || null;
+            }
+        } catch (e) { log('WARN', 'Fabric version fetch failed:', e.message); }
+        if (!fabricLoaderVersion) {
+            throw new Error(`Fabric не поддерживает Minecraft ${mcVersion}.\n\nВыберите другую версию Minecraft или установите Vanilla.`);
+        }
+
         send(event, 20, 'Установка базовой версии Minecraft...');
         // Всегда запускаем installVanillaVersion — он идемпотентен (пропускает существующие файлы).
         // Это гарантирует, что все библиотеки (включая joptsimple) точно скачаны,
         // даже если предыдущая установка оборвалась на полпути.
         const versionData = await installVanillaVersion(event, minecraftPath, mcVersion);
-
-        send(event, 38, 'Получение версии Fabric Loader...');
-        let fabricLoaderVersion = '0.16.0';
-        try {
-            const versions = await fetchJSON(`https://meta.fabricmc.net/v2/versions/loader/${mcVersion}`);
-            fabricLoaderVersion = versions?.[0]?.loader?.version ?? fabricLoaderVersion;
-        } catch (e) { log('WARN', 'Fabric version fetch failed:', e.message); }
 
         send(event, 40, 'Загрузка Fabric Installer...');
         const tempInstallerPath = path.join(minecraftPath, 'fabric-installer.jar');
@@ -1825,9 +1854,23 @@ ipcMain.handle('java:ensure', async (event, { minecraftPath, currentJavaPath }) 
                     path.join(libsPath, `fabric-loader-${fabricLoaderVersion}.jar`));
 
                 const intermediaryPath = path.join(minecraftPath, 'libraries', 'net', 'fabricmc', 'intermediary', mcVersion);
+                const intermediaryJar = path.join(intermediaryPath, `intermediary-${mcVersion}.jar`);
+                // Удаляем старый пустой/битый intermediary, если он остался от сломанной установки
+                if (fs.existsSync(intermediaryJar)) {
+                    try {
+                        const st = fs.statSync(intermediaryJar);
+                        if (st.size === 0) { fs.unlinkSync(intermediaryJar); log('WARN', `Removed empty intermediary: ${intermediaryJar}`); }
+                    } catch {}
+                }
                 fs.mkdirSync(intermediaryPath, { recursive: true });
-                await downloadFile(`https://maven.fabricmc.net/net/fabricmc/intermediary/${mcVersion}/intermediary-${mcVersion}.jar`,
-                    path.join(intermediaryPath, `intermediary-${mcVersion}.jar`)).catch(e => log('WARN', 'Intermediary:', e.message));
+                try {
+                    await downloadFile(`https://maven.fabricmc.net/net/fabricmc/intermediary/${mcVersion}/intermediary-${mcVersion}.jar`,
+                        intermediaryJar);
+                } catch (e) {
+                    log('WARN', 'Intermediary download failed:', e.message);
+                    if (fs.existsSync(intermediaryJar)) { try { fs.unlinkSync(intermediaryJar); } catch {} }
+                    throw new Error(`Не удалось загрузить Fabric intermediary для ${mcVersion}. Fabric может не поддерживать эту версию.`);
+                }
             } else {
                 throw new Error(`Fabric installer failed (code ${code}).\n${stderr}`);
             }
@@ -2074,9 +2117,11 @@ ipcMain.handle('mc:spawn', async (event, { javaPath, args, cwd }) => {
         }
 
         const { spawn } = require('child_process');
+        const isWin = process.platform === 'win32';
         const mcProcess = spawn(String(javaPath), args.map(String), {
             cwd: String(cwd),
-            detached: true,
+            detached: false,
+            windowsHide: true,
             stdio: ['ignore', 'pipe', 'pipe'],
             env: { ...process.env }
         });
@@ -2246,7 +2291,7 @@ ipcMain.handle('instances:list', async (_, basePath) => {
         const result = [];
 
         await Promise.all(dirs
-            .filter(d => d.isDirectory() && d.name.startsWith('minecraft-'))
+            .filter(d => d.isDirectory() && d.name.startsWith('minecraft-') && !/^minecraft-release-\d[\d.]*\d$/.test(d.name))
             .map(async d => {
                 const dirPath = path.join(String(basePath), d.name);
                 const configPath = path.join(dirPath, 'instance.json');
@@ -2690,6 +2735,358 @@ function registerSafePermissionHandler() {
 
 // ========== Жизненный цикл ==========
 
+
+// ════════════════════════════════════════════════════════════════════════════════
+// MICROSOFT AUTH — полный Xbox SISU OAuth flow (как в Minecraft Launcher)
+// ════════════════════════════════════════════════════════════════════════════════
+
+const { generateKeyPairSync, randomBytes, createHash, randomUUID, sign: cryptoSign } = require('crypto');
+const MS_CLIENT_ID = '00000000402B5328';
+
+// PKCE helpers
+function base64UrlEncode(buf) {
+    return buf.toString('base64url');
+}
+function generateVerifier() {
+    return randomBytes(32).toString('hex');
+}
+function generateChallenge(v) {
+    return base64UrlEncode(createHash('sha256').update(v).digest());
+}
+
+// P-256 ECDSA key generation (matching prismarine-auth approach)
+let deviceKeyCache = null;
+function getOrCreateDeviceKey() {
+    if (deviceKeyCache) return deviceKeyCache;
+    const { publicKey, privateKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
+    const jwk = { ...publicKey.export({ format: 'jwk' }), alg: 'ES256', use: 'sig' };
+    deviceKeyCache = { publicKey, privateKey, jwk };
+    return deviceKeyCache;
+}
+
+// Xbox signing format (matching prismarine-auth)
+function xboxSign(urlPath, bodyBuf, authHeader) {
+    const key = getOrCreateDeviceKey();
+    const windowsTimestamp = (BigInt((Date.now() / 1000) | 0) + 11644473600n) * 10000000n;
+
+    const parts = [];
+    const vBuf = Buffer.alloc(4); vBuf.writeInt32BE(1); parts.push(vBuf);
+    parts.push(Buffer.from([0]));
+    const tsBuf = Buffer.alloc(8); tsBuf.writeBigUInt64BE(windowsTimestamp);
+    parts.push(tsBuf);
+    parts.push(Buffer.from([0]));
+    parts.push(Buffer.from('POST')); parts.push(Buffer.from([0]));
+    parts.push(Buffer.from(urlPath)); parts.push(Buffer.from([0]));
+    parts.push(authHeader || Buffer.alloc(0)); parts.push(Buffer.from([0]));
+    parts.push(bodyBuf); parts.push(Buffer.from([0]));
+
+    const signBuf = Buffer.concat(parts);
+    const signature = cryptoSign('SHA256', signBuf, { key: key.privateKey, dsaEncoding: 'ieee-p1363' });
+
+    const hParts = [];
+    const h1 = Buffer.alloc(4); h1.writeInt32BE(1); hParts.push(h1);
+    const h2 = Buffer.alloc(8); h2.writeBigUInt64BE(windowsTimestamp); hParts.push(h2);
+    hParts.push(signature);
+
+    return Buffer.concat(hParts).toString('base64');
+}
+
+async function httpPostJson(url, body, headers = {}) {
+    return new Promise((resolve, reject) => {
+        const bodyStr = JSON.stringify(body);
+        const allHeaders = { 'Content-Type': 'application/json; charset=utf-8', 'Accept': 'application/json', 'Content-Length': Buffer.byteLength(bodyStr).toString(), ...headers };
+        const req = https.request(url, {
+            method: 'POST',
+            headers: allHeaders
+        }, (res) => {
+            let d = '';
+            res.on('data', c => d += c);
+            res.on('end', () => resolve({ status: res.statusCode, data: d, headers: res.headers }));
+        });
+        req.on('error', reject);
+        req.write(bodyStr);
+        req.end();
+    });
+}
+
+async function httpPostForm(url, form) {
+    return new Promise((resolve, reject) => {
+        const bodyStr = form.toString();
+        const req = https.request(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        }, (res) => {
+            let d = '';
+            res.on('data', c => d += c);
+            res.on('end', () => resolve({ status: res.statusCode, data: d }));
+        });
+        req.on('error', reject);
+        req.write(bodyStr);
+        req.end();
+    });
+}
+
+ipcMain.handle('microsoft:auth', async () => {
+    try {
+        const key = getOrCreateDeviceKey();
+
+        // 1. Device token (signed)
+        log('INFO', 'microsoft:auth — получаем device token...');
+        const deviceBody = {
+            Properties: {
+                AuthMethod: 'ProofOfPossession',
+                Id: `{${randomUUID()}}`,
+                SerialNumber: `{${randomUUID()}}`,
+                DeviceType: 'Win32',
+                Version: '10.16.0',
+                ProofKey: key.jwk
+            },
+            RelyingParty: 'http://auth.xboxlive.com',
+            TokenType: 'JWT'
+        };
+        const deviceSig = xboxSign('/device/authenticate', Buffer.from(JSON.stringify(deviceBody)), Buffer.alloc(0));
+        const deviceRes = await httpPostJson('https://device.auth.xboxlive.com/device/authenticate', deviceBody, {
+            'Cache-Control': 'no-store, must-revalidate, no-cache',
+            'Signature': deviceSig,
+            'x-xbl-contract-version': '1'
+        });
+        if (deviceRes.status !== 200) {
+            log('ERROR', `microsoft:auth — device token error: ${deviceRes.data}`);
+            return { ok: false, error: `Device token failed (${deviceRes.status}): ${deviceRes.data.substring(0,300)}` };
+        }
+        const deviceData = JSON.parse(deviceRes.data);
+        const deviceToken = deviceData.Token;
+        log('INFO', 'microsoft:auth — device token получен');
+
+        // 2. PKCE
+        const verifier = generateVerifier();
+        const challenge = generateChallenge(verifier);
+        const state = randomBytes(16).toString('hex');
+
+        // 3. SISU Authenticate (signed)
+        log('INFO', 'microsoft:auth — SISU authenticate...');
+        const sisuBody = {
+            AppId: MS_CLIENT_ID.toLowerCase(),
+            DeviceToken: deviceToken,
+            Offers: ['service::user.auth.xboxlive.com::MBI_SSL'],
+            Query: {
+                code_challenge: challenge,
+                code_challenge_method: 'S256',
+                state: state,
+                prompt: 'select_account'
+            },
+            RedirectUri: 'https://login.live.com/oauth20_desktop.srf',
+            Sandbox: 'RETAIL',
+            TokenType: 'code',
+            TitleId: '1794566092',
+        };
+        const sisuBodyStr = JSON.stringify(sisuBody);
+        const sisuSig = xboxSign('/authenticate', Buffer.from(sisuBodyStr), Buffer.alloc(0));
+        const sisuRes = await httpPostJson('https://sisu.xboxlive.com/authenticate', sisuBody, {
+            'Signature': sisuSig,
+            'x-xbl-contract-version': '1'
+        });
+        if (sisuRes.status !== 200) {
+            return { ok: false, error: `SISU authenticate failed: ${sisuRes.status} ${sisuRes.data.substring(0,200)}` };
+        }
+        const sisuData = JSON.parse(sisuRes.data);
+        const authUrl = sisuData.MsaOauthRedirect;
+        const sessionId = sisuRes.headers['x-sessionid'] || '';
+        log('INFO', 'microsoft:auth — получен URL для браузера');
+
+        if (!authUrl) {
+            return { ok: false, error: 'SISU не вернул URL авторизации' };
+        }
+
+        // 4. Открываем URL в BrowserWindow и ждём код
+        const code = await new Promise((resolve, reject) => {
+            let pollTimer = null;
+            let winClosed = false;
+
+            const authWindow = new BrowserWindow({
+                width: 600, height: 750,
+                title: 'Вход в Microsoft',
+                resizable: false, show: false,
+                webPreferences: { nodeIntegration: false, contextIsolation: true }
+            });
+
+            authWindow.webContents.setUserAgent(
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+            );
+
+            authWindow.once('ready-to-show', () => authWindow.show());
+
+            const cancel = () => {
+                if (pollTimer) clearInterval(pollTimer);
+                if (!authWindow.isDestroyed()) authWindow.close();
+                winClosed = true;
+                resolve(null);
+            };
+
+            pollTimer = setInterval(() => {
+                if (winClosed || authWindow.isDestroyed()) {
+                    if (pollTimer) clearInterval(pollTimer);
+                    return;
+                }
+                try {
+                    const url = authWindow.webContents.getURL();
+                    if (url && url.startsWith('https://login.live.com/oauth20_desktop.srf')) {
+                        const parsed = new URL(url);
+                        const c = parsed.searchParams.get('code');
+                        if (c) {
+                            clearInterval(pollTimer);
+                            if (!authWindow.isDestroyed()) authWindow.close();
+                            resolve(c);
+                        }
+                    }
+                } catch (e) { /* ignore */ }
+            }, 300);
+
+            authWindow.on('closed', () => {
+                winClosed = true;
+                setTimeout(() => { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; resolve(null); } }, 100);
+            });
+
+            authWindow.loadURL(authUrl);
+        });
+
+        if (!code) {
+            return { ok: false, error: 'Не получен код авторизации' };
+        }
+
+        log('INFO', 'microsoft:auth — получен код, обмениваем...');
+
+        // 5. Exchange code for OAuth token (with PKCE)
+        const tokenForm = new URLSearchParams({
+            client_id: MS_CLIENT_ID.toLowerCase(),
+            code: code,
+            code_verifier: verifier,
+            grant_type: 'authorization_code',
+            redirect_uri: 'https://login.live.com/oauth20_desktop.srf',
+            scope: 'service::user.auth.xboxlive.com::MBI_SSL',
+        });
+        const tokenRes = await httpPostForm('https://login.live.com/oauth20_token.srf', tokenForm);
+        if (tokenRes.status !== 200) {
+            return { ok: false, error: `Token exchange failed: ${tokenRes.status} ${tokenRes.data.substring(0,200)}` };
+        }
+        const tokenData = JSON.parse(tokenRes.data);
+        const oauthToken = tokenData.access_token;
+        const refreshToken = tokenData.refresh_token;
+        if (!oauthToken) return { ok: false, error: 'No OAuth token' };
+
+        log('INFO', 'microsoft:auth — OAuth token получен');
+
+        // 6. SISU Authorize (signed)
+        log('INFO', 'microsoft:auth — SISU authorize...');
+        const sisuAuthBody = {
+            AccessToken: `t=${oauthToken}`,
+            AppId: MS_CLIENT_ID.toLowerCase(),
+            DeviceToken: deviceToken,
+            ProofKey: key.jwk,
+            Sandbox: 'RETAIL',
+            SessionId: sessionId,
+            SiteName: 'user.auth.xboxlive.com',
+            RelyingParty: 'http://xboxlive.com',
+            UseModernGamertag: true,
+        };
+        const sisuAuthSig = xboxSign('/authorize', Buffer.from(JSON.stringify(sisuAuthBody)), Buffer.alloc(0));
+        const sisuAuthRes = await httpPostJson('https://sisu.xboxlive.com/authorize', sisuAuthBody, {
+            'Signature': sisuAuthSig,
+        });
+        if (sisuAuthRes.status !== 200) {
+            return { ok: false, error: `SISU authorize failed: ${sisuAuthRes.status} ${sisuAuthRes.data.substring(0,200)}` };
+        }
+        const sisuAuthData = JSON.parse(sisuAuthRes.data);
+        const userToken = sisuAuthData.UserToken?.Token;
+        const titleToken = sisuAuthData.TitleToken?.Token;
+        if (!userToken) return { ok: false, error: 'No user token from SISU' };
+
+        log('INFO', 'microsoft:auth — SISU authorize успешно');
+
+        // 7. XSTS Authorize (signed)
+        log('INFO', 'microsoft:auth — XSTS authorize...');
+        const xstsBody = {
+            RelyingParty: 'rp://api.minecraftservices.com/',
+            TokenType: 'JWT',
+            Properties: {
+                SandboxId: 'RETAIL',
+                UserTokens: [userToken],
+                DeviceToken: deviceToken,
+                TitleToken: titleToken,
+            },
+        };
+        const xstsSig = xboxSign('/xsts/authorize', Buffer.from(JSON.stringify(xstsBody)), Buffer.alloc(0));
+        const xstsRes = await httpPostJson('https://xsts.auth.xboxlive.com/xsts/authorize', xstsBody, {
+            'Signature': xstsSig,
+            'x-xbl-contract-version': '1'
+        });
+        if (xstsRes.status !== 200) {
+            let errMsg = xstsRes.data;
+            try { const j = JSON.parse(errMsg); errMsg = j.XErr ? `XErr:${j.XErr}` : (j.Message || errMsg); } catch {}
+            return { ok: false, error: `XSTS authorize failed: ${errMsg}` };
+        }
+        const xstsData = JSON.parse(xstsRes.data);
+        const xstsToken = xstsData.Token;
+        const uhs = xstsData.DisplayClaims?.xui?.[0]?.uhs;
+        if (!xstsToken || !uhs) return { ok: false, error: 'XSTS token/UHS missing' };
+
+        log('INFO', 'microsoft:auth — XSTS успешно');
+
+        // 8. Minecraft token (launcher/login endpoint как в официальном лаунчере)
+        log('INFO', 'microsoft:auth — Minecraft token...');
+        const mcTokenRes = await httpPostJson('https://api.minecraftservices.com/launcher/login', {
+            platform: 'PC_LAUNCHER',
+            xtoken: `XBL3.0 x=${uhs};${xstsToken}`,
+        });
+        if (mcTokenRes.status !== 200) {
+            return { ok: false, error: `Minecraft token failed: ${mcTokenRes.status} ${mcTokenRes.data.substring(0,200)}` };
+        }
+        const mcTokenData = JSON.parse(mcTokenRes.data);
+        const mcAccessToken = mcTokenData.access_token;
+        if (!mcAccessToken) return { ok: false, error: 'No Minecraft access token' };
+
+        log('INFO', 'microsoft:auth — Minecraft token получен');
+
+        // 9. Entitlements
+        const entitleRes = await new Promise((r) => {
+            const uuid = randomBytes(16).toString('hex');
+            const req = https.get(`https://api.minecraftservices.com/entitlements/license?requestId=${uuid}`, {
+                headers: { 'Authorization': `Bearer ${mcAccessToken}` }
+            }, (res) => { let d=''; res.on('data',c=>d+=c); res.on('end',()=>r({status:res.statusCode,data:d})); });
+            req.on('error', () => r(null));
+        });
+        if (entitleRes && entitleRes.status === 200) {
+            log('INFO', 'microsoft:auth — entitlements ok');
+        } else {
+            log('WARN', `microsoft:auth — entitlements status=${entitleRes?.status}`);
+        }
+
+        // 10. Profile
+        const profileRes = await new Promise((r) => {
+            const req = https.get('https://api.minecraftservices.com/minecraft/profile', {
+                headers: { 'Authorization': `Bearer ${mcAccessToken}` }
+            }, (res) => { let d=''; res.on('data',c=>d+=c); res.on('end',()=>r({status:res.statusCode,data:d})); });
+            req.on('error', () => r(null));
+        });
+        if (!profileRes || profileRes.status !== 200) {
+            let err = profileRes?.data || 'нет ответа';
+            try { err = JSON.parse(err)?.error || err; } catch {}
+            return { ok: false, error: `Профиль Minecraft не найден: ${err}` };
+        }
+        const profile = JSON.parse(profileRes.data);
+        if (!profile.id || !profile.name) return { ok: false, error: 'Профиль без id/name' };
+
+        log('INFO', `microsoft:auth — успешно: ${profile.name} (${profile.id})`);
+        return {
+            ok: true,
+            account: { type: 'microsoft', uuid: profile.id, username: profile.name, accessToken: mcAccessToken }
+        };
+
+    } catch (e) {
+        log('ERROR', `microsoft:auth exception: ${e.message}`);
+        return { ok: false, error: e.message };
+    }
+});
 
 // ════════════════════════════════════════════════════════════════════════════════
 // YGGDRASIL MOCK SERVER — локальная авторизация для MC < 1.17

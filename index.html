@@ -90,7 +90,7 @@
             </div>
             <div class="logo-text">
                 <span class="logo-name">FixLauncher</span>
-                <span class="logo-sub">v2.1.1</span>
+                <span class="logo-sub">v2.1.2</span>
                 <!-- Update badge -->
                 <button class="update-badge" id="update-badge" title="Доступно обновление! Нажмите для автоустановки" style="display:none">
                     <svg class="update-badge-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -198,9 +198,23 @@
                 <div class="field-group">
                     <label class="field-label">
                         <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M8 8a3 3 0 100-6 3 3 0 000 6zm5 6a5 5 0 00-10 0h10z"/></svg>
-                        Имя игрока
+                        Аккаунт
                     </label>
-                    <input type="text" id="player-name" class="field-input" value="Player" placeholder="Введите имя...">
+                    <div class="account-selector" id="account-selector">
+                        <button type="button" class="account-selector-btn field-input" id="account-selector-btn" aria-expanded="false" aria-haspopup="listbox" aria-controls="account-list">
+                            <span class="account-selector-label" id="account-selector-label">FixLauncher</span>
+                            <span class="account-selector-arrow" aria-hidden="true">
+                                <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M4.427 7.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 7H4.604a.25.25 0 00-.177.427z"/></svg>
+                            </span>
+                        </button>
+                        <div class="account-selector-dropdown" id="account-selector-dropdown" role="listbox" aria-hidden="true">
+                            <div class="version-selector-list" id="account-list"></div>
+                            <div class="account-actions">
+                                <button type="button" class="account-add-btn" id="account-add-crack">👤 Crack</button>
+                                <button type="button" class="account-add-btn microsoft-btn" id="account-add-ms">🟢 Microsoft</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="field-group">
@@ -739,6 +753,23 @@
     </div>
 </div>
 
+<!-- ── ACCOUNT DIALOG ── -->
+<div class="account-dialog-overlay" id="account-dialog-overlay" style="display: none;">
+    <div class="account-dialog-panel" role="dialog" aria-modal="true">
+        <div class="account-dialog-header">
+            <h3 class="account-dialog-title" id="account-dialog-title">Введите никнейм</h3>
+            <button type="button" class="account-dialog-close" id="account-dialog-close">✕</button>
+        </div>
+        <div class="account-dialog-body">
+            <input type="text" id="account-dialog-input" class="field-input" placeholder="Игровое имя..." maxlength="16">
+        </div>
+        <div class="account-dialog-footer">
+            <button type="button" class="jvm-modal-btn jvm-modal-btn-cancel" id="account-dialog-cancel">Отмена</button>
+            <button type="button" class="jvm-modal-btn jvm-modal-btn-save" id="account-dialog-confirm">Добавить</button>
+        </div>
+    </div>
+</div>
+
 <div class="jvm-modal-overlay" id="jvm-modal-overlay" style="display: none;">
     <div class="jvm-modal-panel" role="dialog" aria-modal="true">
         <div class="jvm-modal-header">
@@ -767,6 +798,7 @@
     <script src="src/renderer/utils.js"></script>
     <script src="src/renderer/power-tools.js"></script>
     <script src="src/renderer/renderer-support.js"></script>
+    <script src="src/renderer/accounts.js"></script>
     <!-- Tier 2: зависят от constants / utils -->
     <script src="src/renderer/ui-helpers.js"></script>
     <!-- Tier 3: зависят от ui-helpers / utils -->

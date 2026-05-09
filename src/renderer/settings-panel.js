@@ -2,14 +2,14 @@
 'use strict';
 
 /**
- * Панель настроек, credentials, поиск Java, player name
+ * Панель настроек, поиск Java, RAM, прокси
  * @module renderer/settings-panel
  *
  * РЕФАКТОРИНГ:
  *   - Удалены require('path'), require('os'), require('fs'), require('child_process')
  *   - loadSettings() использует window.electronAPI.os / .path / .env
  *   - findJavaPath() — только IPC (java:find), без локального fallback
- *   - saveCredentials / loadCredentials — через window.electronAPI.fs (async)
+ *   - Аккаунты вынесены в accounts.js (localStorage)
  *   - Хардкодные '.fixlauncher' заменены константами LAUNCHER_DIR_*
  */
 
@@ -55,12 +55,6 @@ function loadSettings() {
     if (minecraftArgsInput) minecraftArgsInput.value = savedArgs;
 }
 
-/**
- * Поиск Java через IPC (java:find в main-процессе).
- * Локальный fallback через child_process/fs убран — дублирует логику main и
- * несовместим с contextIsolation:true.
- * @returns {Promise<string|null>}
- */
 async function findJavaPath() {
     try {
         return await window.electronAPI.java.find() || null;
@@ -159,61 +153,6 @@ function initLinks() {
     });
 }
 
-/**
- * Сохранить credentials через IPC (fs:write, async).
- * @param {string} username
- */
-async function saveCredentials(username) {
-    try {
-        const basePath = getVanillaSunsPath();
-        const p        = window.electronAPI.path;
-        const credPath = p.join(basePath, 'credentials.json');
-        await window.electronAPI.fs.mkdir(basePath, { recursive: true });
-        await window.electronAPI.fs.write(credPath, JSON.stringify({ username: username || '' }, null, 2));
-    } catch (error) {
-        console.error('Error saving credentials:', error);
-    }
-}
-
-/**
- * Загрузить credentials через IPC (fs:read, async).
- * @returns {Promise<{ username: string }>}
- */
-async function loadCredentials() {
-    try {
-        const basePath = getVanillaSunsPath();
-        const p        = window.electronAPI.path;
-        const credPath = p.join(basePath, 'credentials.json');
-
-        if (!await window.electronAPI.fs.exists(credPath)) return { username: '' };
-
-        const raw  = await window.electronAPI.fs.read(credPath, 'utf8');
-        const data = JSON.parse(raw);
-
-        // Миграция: удаляем пароль если вдруг сохранился
-        if (Object.prototype.hasOwnProperty.call(data, 'password')) {
-            delete data.password;
-            await window.electronAPI.fs.write(credPath, JSON.stringify({ username: data.username || '' }, null, 2));
-        }
-        return { username: data.username || '' };
-    } catch (error) {
-        console.error('Error loading credentials:', error);
-        return { username: '' };
-    }
-}
-
-async function initPlayerName() {
-    const playerNameInput = document.getElementById('player-name');
-    const credentials = await loadCredentials();
-    if (playerNameInput && credentials.username) playerNameInput.value = credentials.username;
-
-    const saveData = () => saveCredentials(playerNameInput?.value || '');
-    if (playerNameInput) {
-        playerNameInput.addEventListener('input', saveData);
-        playerNameInput.addEventListener('blur',  saveData);
-    }
-}
-
 async function initProxy() {
     const autoBtn      = document.getElementById('proxy-auto-btn');
     const disableBtn   = document.getElementById('proxy-disable-btn');
@@ -297,7 +236,7 @@ async function initProxy() {
 const _SettingsPanel = {
     loadSettings,
     findJavaPath, initBrowseButton, initRamSlider, initSaveButton, initLinks,
-    getVanillaSunsPath, saveCredentials, loadCredentials, initPlayerName,
+    getVanillaSunsPath,
     initProxy,
 };
 if (typeof window !== 'undefined') { window.SettingsPanel = _SettingsPanel; }

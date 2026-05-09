@@ -64,7 +64,7 @@ const {
 const { loadNews, initNewsLinks, initNewsScrollbar } = window.RendererNews;
 const {
     loadSettings, findJavaPath, initBrowseButton, initRamSlider, initSaveButton, initLinks,
-    getVanillaSunsPath, saveCredentials, loadCredentials, initPlayerName, initProxy
+    getVanillaSunsPath, initProxy
 } = window.SettingsPanel;
 const {
     VERSION_STORAGE_KEY, DEFAULT_VERSION_ID,
@@ -180,9 +180,6 @@ function initPlayButton() {
     const playButton = document.getElementById('play-button');
     if (playButton) {
         playButton.addEventListener('click', () => {
-            const playerNameInput = document.getElementById('player-name');
-            const username = playerNameInput ? playerNameInput.value : '';
-            saveCredentials(username);
             playButton.disabled = true;
             playButton.textContent = 'ЗАПУСК...';
             try {
@@ -788,7 +785,7 @@ async function init() {
         initSupportTools();
         initPowerFeatures();
         initLinks();
-        initPlayerName();
+        window.AccountsManager.init();
         initPlayButton();
         initVersionSelector();
         initNewsLinks();

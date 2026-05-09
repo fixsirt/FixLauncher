@@ -57,7 +57,7 @@ const {
     showLauncherAlert, showLauncherConfirm, resetPlayButton, showCrashAlert
 } = window.UiHelpers;
 const { getSelectedVersion, getMinecraftProfilePath } = window.VersionsModule;
-const { getVanillaSunsPath, loadCredentials } = window.SettingsPanel;
+const { getVanillaSunsPath } = window.SettingsPanel;
 const { checkAndDownloadVersion, extractNatives } = window.Installer;
 const { ensureJava, checkJavaVersion } = window.JavaModule;
 
@@ -65,7 +65,8 @@ function launchMinecraft() {
     showProgress();
     updateProgress(0, 'Инициализация...');
 
-    const playerName = document.getElementById('player-name').value || 'Player';
+    const selectedAccount = window.AccountsManager && window.AccountsManager.getSelectedAccount();
+    const playerName = selectedAccount ? selectedAccount.username : 'Player';
     const selectedVersion = getSelectedVersion();
     const versionType = selectedVersion.id;
     const isCustomBuild = versionType === 'custom';
@@ -190,7 +191,11 @@ function _launchWithMeta(playerName, selectedVersion, versionType, isCustomBuild
     updateProgress(10, 'Проверка настроек...');
     console.log(`Using separate Minecraft folder for ${versionType}: ${minecraftPath}`);
 
-    ensureJava(baseMinecraftPath, javaPath).then(async (finalJavaPath) => {
+    // Определяем требуемую версию Java ДО ensureJava, чтобы main мог загрузить правильную версию
+    const mcVerForJava = instanceMcVersion || selectedVersion.mcVersion || '1.21.4';
+    const requiredJavaVer = getRequiredJava(mcVerForJava);
+
+    ensureJava(baseMinecraftPath, javaPath, requiredJavaVer).then(async (finalJavaPath) => {
         console.log('Using Java:', finalJavaPath);
         const verifiedJavaPath = finalJavaPath;
         localStorage.setItem('java-path', verifiedJavaPath);
@@ -252,6 +257,31 @@ function _launchWithMeta(playerName, selectedVersion, versionType, isCustomBuild
     });
 }
 
+/**
+ * Определяет минимальную версию Java в зависимости от версии MC:
+ * - MC 1.20.5+ или major > 1 → Java 21+
+ * - MC 1.17-1.20.4 → Java 17+
+ * - MC < 1.17 → Java 8+
+ * - MC major >= 26 → Java 25+ (новый формат версий без ведущего "1.")
+ */
+function getRequiredJava(mcVer) {
+    if (!mcVer) return 21;
+    const clean = String(mcVer).replace(/-.*/, '');
+    const parts = clean.split('.').map(Number);
+    // Новый формат (без ведущего "1."): "26.1.2" → major=26
+    if (parts[0] > 1) {
+        if (parts[0] >= 26) return 25;
+        if (parts[0] >= 22) return 22;
+        return 21;
+    }
+    // Традиционный формат "1.x.y"
+    const minor = parts[1] || 0;
+    const patch = parts[2] || 0;
+    if (minor > 20 || (minor === 20 && patch >= 5)) return 21;
+    if (minor >= 17) return 17;
+    return 8;
+}
+
 function runMinecraft(minecraftPath, javaPath, playerName, ram, withMods, versionType = 'fabric', versionOverride = null) {
     const selectedVer = getSelectedVersion();
     const fallbackMc = (selectedVer && selectedVer.mcVersion) ? selectedVer.mcVersion : '1.21.4';
@@ -276,24 +306,19 @@ function runMinecraft(minecraftPath, javaPath, playerName, ram, withMods, versio
             return;
         }
 
-        // Определяем минимальную версию Java в зависимости от версии MC:
-        // MC 1.20.5+ → Java 21+, MC 1.17-1.20.4 → Java 17+, MC < 1.17 → Java 8+
-        function getRequiredJava(mcVer) {
-            if (!mcVer) return 21;
-            const parts = mcVer.replace(/-.*/, '').split('.').map(Number);
-            const maj = parts[1] || 0;
-            const min = parts[2] || 0;
-            if (maj > 20 || (maj === 20 && min >= 5)) return 21;
-            if (maj >= 17) return 17;
-            return 8;
-        }
         const mcVersionForJava = (selectedVer && selectedVer.mcVersion) ? selectedVer.mcVersion : '1.21.4';
         const requiredJava = getRequiredJava(mcVersionForJava);
 
         if (javaVersion < requiredJava) {
             hideProgress();
             resetPlayButton();
-            showLauncherAlert(`Ошибка: Несовместимая версия Java!\n\nMinecraft ${mcVersionForJava} требует Java ${requiredJava}+.\nОбнаружена Java ${javaVersion}.\n\nУстановите Java ${requiredJava}+ и укажите путь в настройках.\nТекущий путь: ${javaPath}`);
+            let msg = `Ошибка: Несовместимая версия Java!\n\nMinecraft ${mcVersionForJava} требует Java ${requiredJava}+.\nОбнаружена Java ${javaVersion}.\n\n`;
+            if (requiredJava > 21) {
+                msg += `Это новая версия Minecraft, которая требует Java ${requiredJava}.\nFixLauncher попытается загрузить Java ${requiredJava} автоматически, но если это не удастся — установите Java ${requiredJava} вручную с сайта https://adoptium.net/ и укажите путь в настройках.\n\nТекущий путь: ${javaPath}`;
+            } else {
+                msg += `Установите Java ${requiredJava}+ и укажите путь в настройках.\nТекущий путь: ${javaPath}`;
+            }
+            showLauncherAlert(msg);
             return;
         }
 
@@ -566,6 +591,8 @@ async function continueMinecraftLaunch(minecraftPath, javaPath, playerName, ram,
             if (!ver) return false;
             const clean = String(ver).replace(/-.*/, '');
             const parts = clean.split('.').map(Number);
+            // Новый формат версий (без "1.") — всегда современные, authlib-injector не нужен
+            if (parts[0] > 1) return false;
             const minor = parts[1] || 0;
             return minor < 17; // 1.16.x, 1.15.x, 1.8.x и т.д.
         }
@@ -632,18 +659,34 @@ async function continueMinecraftLaunch(minecraftPath, javaPath, playerName, ram,
             '--height', '480',
         ];
 
-        const uuidKey = `player-uuid-${playerName}`;
-        let playerUUID = localStorage.getItem(uuidKey);
+        const selectedAccount = window.AccountsManager ? window.AccountsManager.getSelectedAccount() : null;
+        const isMicrosoft = selectedAccount && selectedAccount.type === 'microsoft';
+        let playerUUID;
+        let accessToken;
+        let userType;
 
-        if (!playerUUID) {
-            playerUUID = await window.electronAPI.crypto.offlineUUID(playerName);
-            localStorage.setItem(uuidKey, playerUUID);
-            console.log('Generated offline UUID for player:', playerName, '->', playerUUID);
+        if (isMicrosoft && selectedAccount.uuid) {
+            const raw = selectedAccount.uuid.replace(/-/g, '');
+            playerUUID = raw.length === 32
+                ? `${raw.slice(0,8)}-${raw.slice(8,12)}-${raw.slice(12,16)}-${raw.slice(16,20)}-${raw.slice(20)}`
+                : raw;
+            accessToken = selectedAccount.accessToken || playerUUID.replace(/-/g, '') + '00000000000000000000000000000000';
+            userType = 'msa';
+            console.log('Using Microsoft account:', playerName, 'UUID:', playerUUID);
         } else {
-            console.log('Using saved offline UUID for player:', playerName, '->', playerUUID);
+            const uuidKey = `player-uuid-${playerName}`;
+            playerUUID = localStorage.getItem(uuidKey);
+            if (!playerUUID) {
+                playerUUID = await window.electronAPI.crypto.offlineUUID(playerName);
+                localStorage.setItem(uuidKey, playerUUID);
+                console.log('Generated offline UUID for player:', playerName, '->', playerUUID);
+            } else {
+                console.log('Using saved offline UUID for player:', playerName, '->', playerUUID);
+            }
+            accessToken = playerUUID.replace(/-/g, '') + '00000000000000000000000000000000'.slice(playerUUID.replace(/-/g,'').length);
+            userType = 'mojang';
         }
 
-        // FIX: await при работе с usercache.json
         try {
             const usercachePath = path.join(minecraftPath, 'usercache.json');
             let userCache = [];
@@ -680,20 +723,12 @@ async function continueMinecraftLaunch(minecraftPath, javaPath, playerName, ram,
             console.warn('Could not create user profile file:', e);
         }
 
-        // Дедупликация не нужна — аргументы теперь добавляются строго один раз
-
-        // Для офлайн-режима: accessToken должен быть непустым hex-строкой (не '0'),
-        // userType 'mojang' обходит проверку "Multiplayer is disabled" в 1.16+
-        const fakeToken = playerUUID.replace(/-/g, '') + '00000000000000000000000000000000'.slice(playerUUID.replace(/-/g,'').length);
-
-        // Если version.json содержит minecraftArguments или arguments.game — подставляем переменные
-        // и НЕ дублируем аргументы. Иначе добавляем вручную.
         const authVars = {
             '${auth_player_name}': playerName,
             '${auth_uuid}': playerUUID,
-            '${auth_access_token}': fakeToken,
-            '${auth_session}': fakeToken,
-            '${user_type}': 'mojang',
+            '${auth_access_token}': accessToken,
+            '${auth_session}': accessToken,
+            '${user_type}': userType,
             '${version_type}': 'release',
             '${version_name}': version,
             '${game_directory}': minecraftPath,
@@ -701,7 +736,7 @@ async function continueMinecraftLaunch(minecraftPath, javaPath, playerName, ram,
             '${assets_index_name}': assetIndex,
             '${user_properties}': '{}',
             '${clientid}': playerUUID.replace(/-/g,''),
-            '${auth_xuid}': '0',
+            '${auth_xuid}': isMicrosoft ? playerUUID.replace(/-/g,'') : '0',
         };
 
         // ── Дедупликация аргументов ──────────────────────────────────────────
@@ -729,15 +764,16 @@ async function continueMinecraftLaunch(minecraftPath, javaPath, playerName, ram,
         jvmArgs.push(
             '--username', playerName,
             '--uuid', playerUUID,
-            '--accessToken', fakeToken,
-            '--userType', 'mojang',
+            '--accessToken', accessToken,
+            '--userType', userType,
             '--versionType', 'release',
             '--lang', 'ru_RU'
         );
 
-        console.log('=== Launching Minecraft in FULL offline mode (NOT demo) - like T-launcher ===');
+        console.log('=== Launching Minecraft ===');
         console.log('Player name:', playerName);
-        console.log('Player UUID (offline):', playerUUID);
+        console.log('Player UUID:', playerUUID);
+        console.log('Account type:', isMicrosoft ? 'Microsoft (licensed)' : 'Crack (offline)');
         console.log('All launch parameters:', jvmArgs.join(' '));
 
         if (withMods) {
@@ -760,12 +796,10 @@ async function continueMinecraftLaunch(minecraftPath, javaPath, playerName, ram,
         console.log(`[launcher] Args: ${jvmArgs.length} → after dedup: ${cleanArgs.length}`);
         console.log('JVM arguments (after custom):', cleanArgs.join(' '));
 
-        // Записываем launcher_profiles.json с фейковым авторизованным профилем
-        // Это необходимо для Minecraft 1.16+ который проверяет наличие профиля
+        // Записываем launcher_profiles.json с (фейковым или настоящим) профилем
         try {
             const lpPath = window.electronAPI.path.join(minecraftPath, 'launcher_profiles.json');
             const clientToken = playerUUID.replace(/-/g, '');
-            const fakeAccessToken2 = fakeToken;
             const profileData = {
                 profiles: {
                     [playerName]: {
@@ -779,7 +813,7 @@ async function continueMinecraftLaunch(minecraftPath, javaPath, playerName, ram,
                 clientToken: clientToken,
                 authenticationDatabase: {
                     [clientToken]: {
-                        accessToken: fakeAccessToken2,
+                        accessToken: accessToken,
                         username: playerName,
                         profiles: {
                             [playerUUID.replace(/-/g,'')]: { displayName: playerName }
@@ -794,7 +828,7 @@ async function continueMinecraftLaunch(minecraftPath, javaPath, playerName, ram,
                 launcherVersion: { name: 'fixlauncher', format: 21 }
             };
             await window.electronAPI.fs.write(lpPath, JSON.stringify(profileData, null, 2), 'utf8');
-            console.log('[launcher] launcher_profiles.json written for offline multiplayer');
+            console.log('[launcher] launcher_profiles.json written');
         } catch(e) {
             console.warn('[launcher] Could not write launcher_profiles.json:', e.message);
         }

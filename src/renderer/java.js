@@ -18,14 +18,14 @@ async function checkJavaVersion(javaPath) {
     return version;
 }
 
-async function ensureJava(minecraftPath, currentJavaPath) {
+async function ensureJava(minecraftPath, currentJavaPath, requiredVersion) {
     // Подписываемся на прогресс из main
     const unsubscribe = window.electronAPI.java.onProgress(({ pct, msg }) => {
         updateProgress(pct, msg);
     });
 
     try {
-        const result = await window.electronAPI.java.ensure(minecraftPath, currentJavaPath);
+        const result = await window.electronAPI.java.ensure(minecraftPath, currentJavaPath, requiredVersion);
         if (!result.ok) throw new Error(result.error || 'Ошибка установки Java');
         return result.javaPath;
     } finally {

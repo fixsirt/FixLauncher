@@ -119,7 +119,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     java: {
         find:         ()                        => ipcRenderer.invoke('java:find'),
         checkVersion: (jp)                      => ipcRenderer.invoke('java:check-version', jp),
-        ensure:       (minecraftPath, javaPath) => ipcRenderer.invoke('java:ensure', { minecraftPath, currentJavaPath: javaPath }),
+        ensure:       (minecraftPath, javaPath, requiredVersion) => ipcRenderer.invoke('java:ensure', { minecraftPath, currentJavaPath: javaPath, requiredVersion }),
         onProgress:   (cb)                      => {
             ipcRenderer.on('java:progress', (_, data) => cb(data));
             return () => ipcRenderer.removeAllListeners('java:progress');
@@ -271,6 +271,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
         downloadProgress: (id, cb) =>
             makeListener(`download:progress:${id}`, d => cb(d)),
     },
+
+    // ────────────────────────────────────────────────────────────────────────
+    // MICROSOFT AUTH — автоматический вход
+    // ────────────────────────────────────────────────────────────────────────
+    microsoftAuth: () => ipcRenderer.invoke('microsoft:auth'),
 
     // ────────────────────────────────────────────────────────────────────────
     // LAUNCHER — служебные данные от main-процесса
