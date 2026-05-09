@@ -1,6 +1,6 @@
 {
   "name": "fixlauncher",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "FixLauncher Launcher for Minecraft - Modern, Secure, Updated",
   "main": "main.js",
   "scripts": {

@@ -139,7 +139,7 @@ function showUpdateBanner(info) {
 
             if (result && result.ok) {
                 const b = document.getElementById('update-banner-dl');
-                if (b) b.textContent = '✅ Установщик запущен!';
+                if (b) b.textContent = '✅ Замена...';
                 setTimeout(() => banner.remove(), BANNER_AUTODISMISS_MS);
             } else {
                 // Если нет assets — fallback на браузер

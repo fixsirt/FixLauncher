@@ -458,18 +458,20 @@ ipcMain.handle('download-update', async () => {
     }
     try {
         const tmpDir = require('os').tmpdir();
-        const destPath = require('path').join(tmpDir, latestReleaseInfo.assetName);
+        const destPath = path.join(tmpDir, latestReleaseInfo.assetName);
         log('INFO', `Downloading update to: ${destPath}`);
+
+        if (mainWindow) mainWindow.webContents.send('update-progress', 0);
 
         await new Promise((resolve, reject) => {
             const file = fs.createWriteStream(destPath);
             function download(url) {
-                const mod = url.startsWith('https') ? require('https') : require('http');
+                const mod = url.startsWith('https') ? https : http;
                 mod.get(url, { headers: { 'User-Agent': 'FixLauncher-Updater' } }, res => {
                     if (res.statusCode === 302 || res.statusCode === 301) {
                         file.close();
                         const newFile = fs.createWriteStream(destPath);
-                        const newMod = res.headers.location.startsWith('https') ? require('https') : require('http');
+                        const newMod = res.headers.location.startsWith('https') ? https : http;
                         newMod.get(res.headers.location, { headers: { 'User-Agent': 'FixLauncher-Updater' } }, res2 => {
                             const total = parseInt(res2.headers['content-length'] || '0', 10);
                             let received = 0;
@@ -501,13 +503,42 @@ ipcMain.handle('download-update', async () => {
             download(latestReleaseInfo.downloadUrl);
         });
 
-        log('INFO', 'Update downloaded. Opening installer.');
-        shell.openPath(destPath);
-        setTimeout(() => { app.quit(); }, 2000);
+        // Проверка на пустой файл
+        const stat = fs.statSync(destPath);
+        if (stat.size === 0) {
+            fs.unlinkSync(destPath);
+            throw new Error('Downloaded file is empty');
+        }
+
+        log('INFO', 'Update downloaded. Creating updater script.');
+
+        const currentExe = process.execPath;
+        const updaterPath = path.join(tmpDir, 'fixlauncher_updater.ps1');
+
+        const esc = s => s.replace(/'/g, "''");
+        const psScript = `$r = 30; $d = 500;
+for ($i = 0; $i -lt $r; $i++) {
+    Start-Sleep -Milliseconds $d;
+    try {
+        Copy-Item -LiteralPath '${esc(destPath)}' -Destination '${esc(currentExe)}' -Force -ErrorAction Stop;
+        Start-Process -LiteralPath '${esc(currentExe)}';
+        Remove-Item -LiteralPath '${esc(destPath)}' -Force -ErrorAction SilentlyContinue;
+        break
+    } catch { }
+}
+Remove-Item -LiteralPath '${esc(updaterPath)}' -Force -ErrorAction SilentlyContinue`;
+
+        fs.writeFileSync(updaterPath, psScript, 'utf8');
+
+        require('child_process').exec(
+            `powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "${updaterPath}"`,
+            (err) => { if (err) log('WARN', `Updater script: ${err.message}`); }
+        );
+
+        setTimeout(() => { app.quit(); }, 500);
         return { ok: true };
     } catch (e) {
         log('ERROR', `Download update failed: ${e.message}`);
-        // Fallback: открыть страницу релиза
         shell.openExternal(latestReleaseInfo.url);
         return { ok: false, reason: e.message };
     }
